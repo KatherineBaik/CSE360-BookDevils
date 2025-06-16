@@ -4,8 +4,17 @@ public class User {
     private String password;
     private Role role;
 
+    //Constructors
+    public User(){
+        //TODO
+    }
 
-    enum Role{
+    //Getters and Setters
+
+    //Other Functions
+
+    //Enums
+    public enum Role{
         BUYER, SELLER, ADMIN
     }
 }
