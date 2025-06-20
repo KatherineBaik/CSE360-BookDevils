@@ -102,6 +102,14 @@ public class Book {
         this.sellingPrice = sellingPrice;
     }
 
+    public boolean isSold() {
+        return isSold;
+    }
+
+    public void setSold(boolean sold) {
+        this.isSold = sold;
+    }
+
     //Enums
     public enum Condition{
         LIKE_NEW, MODERATELY_USED, HEAVILY_USED
