@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class AuthenticationService {
 
-    private static Map<String, UserInfo> users = new HashMap<>();
+    static Map<String, UserInfo> users = new HashMap<>();
 
     static class UserInfo {
         String password;
@@ -17,14 +17,18 @@ public class AuthenticationService {
         }
     }
 
-    static {
+    static void initializeUsers() {
         users.put("1234567890", new UserInfo("password123", "Buyer"));
         users.put("0987654321", new UserInfo("admin123", "Admin"));
         users.put("1122334455", new UserInfo("seller123", "Seller"));
         users.put("2233445566", new UserInfo("buyer123", "Buyer"));
     }
 
-    public static boolean authenticate(String asuId, String password, String role) {
+    static boolean authenticate(String asuId, String password, String role) {
+        if (users.isEmpty()) {
+            initializeUsers();
+        }
+
         if (asuId == null || password == null || role == null) {
             return false;
         }
@@ -38,11 +42,11 @@ public class AuthenticationService {
         return user.password.equals(password) && user.role.equals(role);
     }
 
-    public static void addUser(String asuId, String password, String role) {
+    static void addUser(String asuId, String password, String role) {
         users.put(asuId, new UserInfo(password, role));
     }
 
-    public static boolean userExists(String asuId) {
+    static boolean userExists(String asuId) {
         return users.containsKey(asuId);
     }
 }
