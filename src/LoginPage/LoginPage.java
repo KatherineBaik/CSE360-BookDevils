@@ -17,13 +17,14 @@ public class LoginPage extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        // ---------- Left Side: Form ----------
+        // Greeting
         Label greeting = new Label("Welcome Back !");
         greeting.setFont(Font.font("Arial", 24));
 
         Label subText = new Label("Today is a new day. It’s your day. You shape it.\nSign in to start buying and selling.");
         subText.setTextFill(Color.DARKGRAY);
 
+        // Input fields
         TextField asuIdField = new TextField();
         asuIdField.setPromptText("1234567890");
 
@@ -38,7 +39,7 @@ public class LoginPage extends Application {
         signInBtn.setMaxWidth(Double.MAX_VALUE);
         signInBtn.setStyle("-fx-background-color: #1a1a2e; -fx-text-fill: white;");
 
-        Label messageLabel = new Label();  // to show success/fail message
+        Label messageLabel = new Label();
 
         signInBtn.setOnAction(e -> {
             String asuId = asuIdField.getText();
@@ -51,20 +52,18 @@ public class LoginPage extends Application {
                 return;
             }
 
-            // boolean authenticate(String id, String password, String role)
             boolean isAuthenticated = AuthenticationService.authenticate(asuId, password, role);
 
             if (isAuthenticated) {
                 messageLabel.setText("Login successful! Logged in as " + role);
                 messageLabel.setTextFill(Color.GREEN);
-                // Optional: redirect to Buyer/Seller/Admin page
+                // TODO: Redirect to role page here if needed
             } else {
                 messageLabel.setText("Invalid credentials.");
                 messageLabel.setTextFill(Color.RED);
             }
         });
 
-        // SSO button that opens ASU login page in browser
         Button ssoBtn = new Button("Sign in with SSO");
         ssoBtn.setOnAction(e -> {
             try {
@@ -76,7 +75,6 @@ public class LoginPage extends Application {
 
         Label signupPrompt = new Label("Don’t have an account?");
         Hyperlink signupLink = new Hyperlink("Sign up");
-
         HBox signupBox = new HBox(5, signupPrompt, signupLink);
         signupBox.setAlignment(Pos.CENTER);
 
@@ -92,8 +90,7 @@ public class LoginPage extends Application {
         form.setPadding(new Insets(30));
         form.setMaxWidth(350);
 
-        // ---------- Right Side: Logo ----------
-        Image logoImage = new Image("file:logo.png");  // make sure logo.png is in same folder
+        Image logoImage = new Image("file:logo.png");
         ImageView logoView = new ImageView(logoImage);
         logoView.setFitWidth(250);
         logoView.setPreserveRatio(true);
@@ -102,7 +99,6 @@ public class LoginPage extends Application {
         logoBox.setAlignment(Pos.CENTER);
         logoBox.setPadding(new Insets(30));
 
-        // ---------- Final Layout ----------
         HBox mainLayout = new HBox(form, logoBox);
         mainLayout.setSpacing(30);
         mainLayout.setAlignment(Pos.CENTER);
