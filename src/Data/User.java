@@ -55,6 +55,11 @@ public class User {
 
     //Other Functions
 
+    @Override
+    public String toString(){
+        return String.format("id=%d, username=%s, role=%s", userID, username, role.toString());
+    }
+
     //Enums
     public enum Role{
         BUYER, SELLER, ADMIN
