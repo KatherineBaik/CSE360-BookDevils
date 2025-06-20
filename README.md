@@ -7,3 +7,5 @@ VM Options:
 
 ### TODO
 
+- Write documentation in the wiki pages
+- Make LoginPage code work with the User class
