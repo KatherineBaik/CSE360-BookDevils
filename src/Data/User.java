@@ -2,7 +2,7 @@ package Data;
 
 public class User {
     private final int userID;
-    private String username;
+    private String name;
     private String password;
     private Role role;
     private boolean isSuspended;
