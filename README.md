@@ -16,7 +16,7 @@ A Java / JavaFX prototype for a campus book–buy & sell system. Login suppo
 
 ---
 
-## ✨ What’s in This Release
+## What’s in This Release
 
 | Area               | Changes                                                                                           |
 | ------------------ | ------------------------------------------------------------------------------------------------- |
