@@ -1,67 +1,50 @@
 package Data;
 
 public class User {
-    private final int userID;
-    private String name;
+    /** we keep leading zeros, so store the ASU ID as a String */
+    private final String asuId;
     private String password;
     private Role role;
-    private boolean isSuspended;
+    private boolean suspended;
 
-    //Constructor
-    public User(int ID, String username, String password, Role role){
-        userID = ID;
-        this.username = username;
+    public User(String asuId, String password, Role role) {
+        this.asuId = asuId;
         this.password = password;
         this.role = role;
-        isSuspended = false;
+        this.suspended = false;
     }
 
-    //Getters and Setters
-    public int getUserID() {
-        return userID;
+    // ——— getters & setters ———
+    public String getAsuId()       { return asuId; }
+    public String getPassword()    { return password; }
+    public void   setPassword(String pw) { this.password = pw; }
+
+    public Role   getRole()        { return role; }
+    public void   setRole(Role r)  { this.role = r; }
+
+    public boolean isSuspended()   { return suspended; }
+    public void    setSuspended(boolean s) { this.suspended = s; }
+
+    @Override public String toString() {
+        return String.format("asuId=%s, role=%s", asuId, role);
     }
 
-    public String getUsername() {
-        return username;
+    // Enum of roles the UI combo-box shows
+    public enum Role { BUYER, SELLER, ADMIN }
+    
+    public String toCsv() {
+        return String.join(",",
+                asuId,
+                password,
+                role.name(),
+                Boolean.toString(suspended));
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public boolean isSuspended() {
-        return isSuspended;
-    }
-
-    public void setSuspended(boolean suspended) {
-        isSuspended = suspended;
-    }
-
-    //Other Functions
-
-    @Override
-    public String toString(){
-        return String.format("id=%d, username=%s, role=%s", userID, username, role.toString());
-    }
-
-    //Enums
-    public enum Role{
-        BUYER, SELLER, ADMIN
+    public static User fromCsv(String line) throws IllegalArgumentException {
+        String[] parts = line.split(",", -1);
+        if (parts.length < 4) throw new IllegalArgumentException("Bad line: " + line);
+        User u = new User(parts[0], parts[1], Role.valueOf(parts[2]));
+        u.suspended = Boolean.parseBoolean(parts[3]);
+        return u;
     }
 }
