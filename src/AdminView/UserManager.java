@@ -1,6 +1,7 @@
 package AdminView;
 
 import Data.User;
+import Data.UserStore;
 
 import java.io.IOException;
 import java.util.Map;
@@ -9,9 +10,15 @@ public class UserManager {
     private static Map<String, User> userList;
 
     /** Loads all user data stored in file.
-     * NOTE: This should be used at the start of the application. */
+     * NOTE: Must be used before using this class. */
     public static void loadData() throws IOException{
-        userList = Data.UserStore.load();
+        userList = UserStore.load();
+    }
+
+    /** Saves all user data to file.
+     * NOTE: Should be used at before application closes, or when updating data in the list. */
+    public static void saveData() throws IOException{
+        UserStore.save(userList.values());
     }
 
     //----------------------
@@ -35,12 +42,7 @@ public class UserManager {
     /** Returns true if the user is successfully deleted.
      * If the user does not exist, returns false */
     public static boolean removeUser(String ID){
-        if(userList.remove(ID) == null){
-            return false;
-        }
-        else{
-            return true;
-        }
+        return userList.remove(ID) != null;
     }
 
     //TODO: Edit a user???

@@ -1,7 +1,9 @@
 package AdminView;
 
 import Data.Order;
+import Data.UserStore;
 
+import java.io.IOException;
 import java.util.List;
 
 public class TransactionLog {
@@ -10,6 +12,12 @@ public class TransactionLog {
     /** Loads all transaction data stored in file.
      * NOTE: Must be used before using this class. */
     public static void loadData(){
+        //TODO
+    }
+
+    /** Saves all transaction data to file.
+     * NOTE: Should be used at before application closes, or when updating data in the list. */
+    public static void saveData() throws IOException {
         //TODO
     }
 
