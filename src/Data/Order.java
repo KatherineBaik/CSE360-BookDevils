@@ -44,7 +44,7 @@ public class Order {
     // Optional: for printing order info
     public void printOrderDetails() {
         System.out.println("Order ID: " + orderID);
-        System.out.println("Buyer: " + buyer.getUsername());
+        //System.out.println("Buyer: " + buyer.getUsername());
         System.out.println("Books:");
         for (Book b : books) {
             System.out.println("- " + b.getTitle() + " by " + b.getAuthor() + " | $" + b.getSellingPrice());

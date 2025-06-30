@@ -1,3 +1,7 @@
+package SellerView;
+
+import Data.Book;
+
 import java.util.ArrayList;
 import java.util.List;
 

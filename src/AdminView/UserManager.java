@@ -41,9 +41,11 @@ public class UserManager {
 
     /** Returns true if the user is successfully deleted.
      * If the user does not exist, returns false */
-    public static boolean removeUser(String ID){
-        return userList.remove(ID) != null;
+    public static boolean removeUser(String ID) throws IOException{
+        boolean success = userList.remove(ID) != null;
+        saveData();
+        return success;
     }
 
-    //TODO: Edit a user???
+    //Suggestion: Edit a user???
 }

@@ -110,6 +110,21 @@ public class Book {
         this.isSold = sold;
     }
 
+    @Override
+    public boolean equals(Object object){
+        //check class of object
+        if(object.getClass() != this.getClass()){
+            return false;
+        }
+        else{
+            Book otherBook = (Book) object;
+
+            //TODO make sure all fields are the same
+
+            return true;
+        }
+    }
+
     //Enums
     public enum Condition{
         LIKE_NEW, MODERATELY_USED, HEAVILY_USED

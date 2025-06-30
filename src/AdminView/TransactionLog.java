@@ -1,7 +1,6 @@
 package AdminView;
 
 import Data.Order;
-import Data.UserStore;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,7 +15,7 @@ public class TransactionLog {
     }
 
     /** Saves all transaction data to file.
-     * NOTE: Should be used at before application closes, or when updating data in the list. */
+     * NOTE: Should be used before application closes, or when updating data in the list. */
     public static void saveData() throws IOException {
         //TODO
     }
@@ -33,5 +32,11 @@ public class TransactionLog {
         return orderList.size();
     }
 
-    //TODO: Search and sort methods?
+    /** Add an order to the list */
+    public static void add(Order order){
+        orderList.addLast(order);
+    }
+
+    //Suggestion: Search and sort methods?
+
 }
