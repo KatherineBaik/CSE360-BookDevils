@@ -90,7 +90,7 @@ public class AnalysisTool {
             bookList = o.getBooks();
             for(Book b : bookList){
                 //if a book does not exist in the map, add it and set the value to 1
-                if(!totals.containsKey(b)){ //TODO: NOTE! In book, override equals method
+                if(!totals.containsKey(b)){
                     totals.put(b, 1);
 
                     if(bestSelling == null){

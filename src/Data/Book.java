@@ -119,9 +119,11 @@ public class Book {
         else{
             Book otherBook = (Book) object;
 
-            //TODO make sure all fields are the same
-
-            return true;
+            return title.equals(otherBook.title)
+                    && author.equals(otherBook.author)
+                    && publishedYear == otherBook.publishedYear
+                    && category == otherBook.category
+                    && condition == otherBook.condition;
         }
     }
 
