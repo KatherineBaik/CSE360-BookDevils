@@ -2,6 +2,7 @@ package AdminView;
 
 import Data.User;
 
+import LoginPage.LoginPage;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -71,8 +72,8 @@ public class AdminPage extends Application {
         mainLayout.getChildren().add(logoutButton);
 
         logoutButton.setOnAction(e -> {
-            createPopupMessage("You have been logged out.");
-            //TODO: return to login page
+            LoginPage loginPage = new LoginPage();
+            loginPage.start(stage);
         });
 
         //------------------
