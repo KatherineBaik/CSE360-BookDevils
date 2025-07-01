@@ -1,5 +1,7 @@
 package AdminView;
 
+import Data.User;
+
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -13,8 +15,22 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+/**
+ * Very small Admin dashboard so LoginPage can launch it.
+ * Flesh this out later with tables & charts.
+ */
 public class AdminPage extends Application {
     double width, height;
+
+    private final User admin;          // logged-in admin
+
+    /* Called by LoginPage */
+    public AdminPage(User admin) {
+        this.admin = admin;
+    }
+
+    /* No-arg constructor for JavaFX launcher – never used directly */
+    public AdminPage() { this.admin = null; }
 
     @Override
     public void start(Stage stage){

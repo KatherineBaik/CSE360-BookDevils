@@ -1,2 +1,3 @@
 # asuId,password,role,suspended (auto-generated)
 125,Password,ADMIN,false
+1221,hello,BUYER,false

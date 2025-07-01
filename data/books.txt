@@ -1,0 +1,1 @@
+# id,title,author,year,category,condition,origPrice,sellPrice,sellerId,sold

@@ -1,6 +1,9 @@
 package LoginPage;
 
 import Data.User;
+import Data.BookStore;
+import Data.OrderStore;
+
 import javafx.application.Application;
 import javafx.geometry.*;
 import javafx.scene.Scene;
@@ -13,7 +16,14 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.awt.Desktop;
+import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+
+import BuyerView.BuyerPage;
+import AdminView.AdminPage;
+import SellerView.BookListingManager;
+import SellerView.SellerPage;
 
 /**
  * Book Devils – Login window.
@@ -144,6 +154,33 @@ public class LoginPage extends Application {
         }
     }
 
+    /** Opens the role-specific dashboard in a new window, then closes login. */
+    private void openDashboard(Stage loginStage, User user) {
+        try {
+            switch (user.getRole()) {
+                case BUYER -> {
+                    // pull the current inventory once and pass it to the UI
+                    var listings = BookListingManager.getInstance().getAllListings();
+                    BuyerPage buyerPage = new BuyerPage(user, new ArrayList<>(listings));
+                    buyerPage.start(new Stage());
+                }
+                case SELLER -> {
+                    SellerPage sellerPage = new SellerPage(user);
+                    sellerPage.start(new Stage());
+                }
+                case ADMIN -> {
+                    AdminPage adminPage = new AdminPage(user);
+                    adminPage.start(new Stage());
+                }
+            }
+            loginStage.close();                 // hide login after successful launch
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            setMessage("Could not open dashboard!", Color.RED);
+        }
+    }
+
+
     /** Handles Sign-In button click */
     private void handleLogin() {
         String asuId   = idField.getText().trim();
@@ -161,7 +198,8 @@ public class LoginPage extends Application {
 
         if (loggedIn != null) {
             setMessage("Login successful! Logged in as " + loggedIn.getRole(), Color.GREEN);
-            // TODO: switch to Buyer/Seller/Admin dashboard here
+            Stage currentStage = (Stage) idField.getScene().getWindow(); // grab the login stage
+            openDashboard(currentStage, loggedIn);                       // launch Buyer/Seller/Admin
         } else {
             setMessage("Invalid credentials.", Color.RED);
         }
@@ -198,5 +236,14 @@ public class LoginPage extends Application {
     }
 
     /** Java entry point */
-    public static void main(String[] args) { launch(args); }
+    public static void main(String[] args) { 
+        try {
+            BookStore.load();    // touch-create books.txt
+            OrderStore.load();   // touch-create orders.txt
+        } catch (IOException ex) {
+            ex.printStackTrace();      // or show an Alert dialog
+        }
+        launch(args); 
+
+    }
 }
