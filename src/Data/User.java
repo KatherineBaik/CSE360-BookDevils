@@ -47,4 +47,14 @@ public class User {
         u.suspended = Boolean.parseBoolean(parts[3]);
         return u;
     }
+
+    //for testing
+    @Override
+    public boolean equals(Object obj){
+        if(!(obj instanceof User other)) return false;
+        return (asuId.equals(other.asuId) &&
+                password.equals(other.password) &&
+                role.equals(other.role) &&
+                suspended == other.suspended);
+    }
 }

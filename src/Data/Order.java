@@ -45,4 +45,12 @@ public class Order {
         return "Order#" + orderId + " – " + books.size() +
                " item(s) – $" + "%.2f".formatted(totalPrice);
     }
+
+    @Override public boolean equals(Object obj){
+        if(!(obj instanceof Order other)) return false;
+        return (buyer.equals(other.buyer) &&
+                books.equals(other.books) &&
+                totalPrice == other.totalPrice &&
+                timestamp.equals(other.timestamp));
+    }
 }
