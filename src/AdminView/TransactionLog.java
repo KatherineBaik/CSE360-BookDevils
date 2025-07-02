@@ -77,10 +77,11 @@ public final class TransactionLog {
     public static List<Order> getOrderList() { return ORDER_LIST; }
     public static int         size()         { return ORDER_LIST.size(); }
 
-    /** Adds an order and immediately persists the change. */
+    /** Adds an order and immediately persists the change.
+     * NOTE: Does not autosave currently */
     public static synchronized void add(Order order) {
         ORDER_LIST.add(order);
-        saveData();                       // autosave for safety; remove if undesired
+        //saveData();                       // autosave for safety; remove if undesired
     }
 
     /* ------------------------------------------------------------------
@@ -102,5 +103,10 @@ public final class TransactionLog {
     /** Descending sort by total price (mutates internal list). */
     public static void sortByValue() {
         ORDER_LIST.sort(Comparator.comparingDouble(Order::getTotalPrice).reversed());
+    }
+
+    /** FOR TESTING PURPOSES */
+    public static synchronized void clear(){
+        ORDER_LIST.clear();
     }
 }
