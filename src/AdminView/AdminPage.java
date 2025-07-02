@@ -28,6 +28,9 @@ public class AdminPage extends Application {
     /* Called by LoginPage */
     public AdminPage(User admin) {
         this.admin = admin;
+
+        width = 800;
+        height = 500;
     }
 
     /* No-arg constructor for JavaFX launcher – never used directly */
@@ -35,14 +38,6 @@ public class AdminPage extends Application {
 
     @Override
     public void start(Stage stage){
-        width = 800;
-        height = 500;
-
-        //set title?
-        show(stage);
-    }
-
-    public void show(Stage stage){
         //Create the layout
         HBox mainLayout = new HBox();
         mainLayout.setMinSize(width, height);
