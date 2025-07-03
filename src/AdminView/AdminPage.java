@@ -1,5 +1,6 @@
 package AdminView;
 
+import Data.Order;
 import Data.User;
 
 import LoginPage.LoginPage;
@@ -57,7 +58,6 @@ public class AdminPage extends Application {
         Tab analysisTab = createAnalysisTab();
         Tab transactionsTab = createTransactionTab();
 
-
         //------------------
         //Create tabPane and add all the tabs
         TabPane tabPane = new TabPane();
@@ -84,7 +84,7 @@ public class AdminPage extends Application {
         //set and show scene
         Scene scene = new Scene(mainLayout, width, height);
         stage.setScene(scene);
-        stage.setTitle("BookDevils - Admin Page");
+        stage.setTitle("BookDevils - Admin");
         stage.show();
     }
 
@@ -139,12 +139,11 @@ public class AdminPage extends Application {
         userTable.getColumns().addAll(asuIDCol, statusCol, roleCol);
         layout.getChildren().addAll(header1, userTable);
 
-        //table of books?
-
-
         dashboardTab.setContent(layout);
         return dashboardTab;
     }
+
+    //-------------------------------------------
 
     private Tab createAnalysisTab(){
         Tab analysisTab = new Tab("Analysis");
@@ -181,13 +180,20 @@ public class AdminPage extends Application {
 
         // Sales Insights
         double revenue = AnalysisTool.getTotalRevenue(); // What happens when the revenue gets too large?
+        String bookTitle = "n/a";
+        if(AnalysisTool.getBestSellingBook() != null){
+            bookTitle = AnalysisTool.getBestSellingBook().getTitle();
+        }
+        String bookCategory = "n/a";
+        if(AnalysisTool.getHighestGrossingCategory() != null){
+            bookCategory = AnalysisTool.getHighestGrossingCategory().toString();
+        }
 
         VBox salesInsightsRow = createDisplayRow("Sales Insights",
                 createValueDisplay(String.format("%.2f", revenue),"Total Revenue"),
                 createValueDisplay("n/a","Highest Grossing Seller"),
-                //TODO: CHANGE WHEN FUNCTIONALITY GETS ADDED
-                createValueDisplay(/*AnalysisTool.getBestSellingBook().getTitle()*/ "n/a", "Top-Selling Book"),
-                createValueDisplay(/*AnalysisTool.getHighestGrossingCategory().toString()*/ "n/a","Highest-Grossing Category"));
+                createValueDisplay(bookTitle, "Top-Selling Book"),
+                createValueDisplay(bookCategory,"Highest-Grossing Category"));
 
         salesInsightsRow.setPadding(new Insets(10));
 
@@ -196,6 +202,8 @@ public class AdminPage extends Application {
         analysisTab.setContent(layout);
         return analysisTab;
     }
+
+    //-------------------------------------------
 
     private Tab createTransactionTab(){
         Tab transactionsTab = new Tab("Transactions");
@@ -209,13 +217,42 @@ public class AdminPage extends Application {
         layout.getChildren().add(mainHeader);
 
         //create the table of orders
+        TableView<Order> orderTable = new TableView<>();
+        ObservableList<Order> orderData = FXCollections.observableArrayList(TransactionLog.getOrderList());
+        orderTable.setItems(orderData);
+
+        TableColumn<Order, String> IDCol= new TableColumn<>("#");
+        IDCol.setCellValueFactory(d ->
+                new SimpleStringProperty(Integer.toString(d.getValue().getOrderId()))
+        );
+        TableColumn<Order, String> buyerCol = new TableColumn<>("Buyer");
+        buyerCol.setCellValueFactory(d ->
+                new SimpleStringProperty(d.getValue().getBuyer().getAsuId())
+        );
+        TableColumn<Order, String> timeCol = new TableColumn<>("Timestamp");
+        timeCol.setCellValueFactory(d ->
+                new SimpleStringProperty(d.getValue().getTimestamp().toString())
+        );
+        TableColumn<Order, String> numCol = new TableColumn<>("Total books");
+        numCol.setCellValueFactory(d ->
+                new SimpleStringProperty(Integer.toString(d.getValue().getBooks().size()))
+        );
+        TableColumn<Order, String> priceCol = new TableColumn<>("Total price");
+        priceCol.setCellValueFactory(d ->
+                new SimpleStringProperty(String.format("%.2f", d.getValue().getTotalPrice()))
+        );
+
+        orderTable.getColumns().addAll(IDCol, buyerCol, timeCol, numCol, priceCol);
+        layout.getChildren().add(orderTable);
 
 
         transactionsTab.setContent(layout);
         return transactionsTab;
     }
 
-    // OTHER UI DETAILS
+    //-------------------------------------------
+    // OTHER UI FEATURES
+    //-------------------------------------------
     private Label createHeader(String str){
         Label header = new Label(str);
         header.setFont(new Font(18));
