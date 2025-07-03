@@ -72,7 +72,6 @@ public class AnalysisTool {
         return getTotalRevenue() / getTotalOrders();
     }
 
-    //TEST AND CHECK!!!!
     /** Finds the best-selling book. */
     public static Book getBestSellingBook(){
         Book bestSelling = null;
@@ -116,7 +115,6 @@ public class AnalysisTool {
         return bestSelling;
     }
 
-    //TEST AND CHECK!!!!
     /** Calculate the best-selling book category */
     public static Book.Category getBestSellingCategory(){
         Book.Category bestSelling = null;
@@ -156,6 +154,12 @@ public class AnalysisTool {
 
     /** Get the total number of books in BookListingManager */
     public static int getTotalBooks(){
+        //TODO
+        return 0;
+    }
+
+    /** Get the number of books that are sold/available in BookListingManager */
+    public static int getTotalBooks(boolean sold){
         //TODO
         return 0;
     }

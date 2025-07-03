@@ -1,5 +1,7 @@
 package AdminView;
 
+import Data.Book;
+import Data.Order;
 import Data.User;
 import Data.UserStore;
 import SellerView.BookListingManager;
@@ -68,32 +70,51 @@ class AnalysisToolTest {
     //---------------
     @Test
     void getTotalOrders() {
-        //TODO
-        fail("Not implemented yet");
+        TransactionLog.clear();
+        addTestOrders();
+
+        assertEquals(4, AnalysisTool.getTotalOrders());
     }
 
     @Test
     void getTotalRevenue() {
-        //TODO
-        fail("Not implemented yet");
+        TransactionLog.clear();
+        addTestOrders();
+
+        double total = (10.99 * 3) + (5.99 * 5);
+
+        assertEquals(total, AnalysisTool.getTotalRevenue());
     }
 
     @Test
     void getAverageRevenue() {
-        //TODO
-        fail("Not implemented yet");
+        TransactionLog.clear();
+        addTestOrders();
+
+        double total = (10.99 * 3) + (5.99 * 5);
+        double avg = total / 4;
+
+        assertEquals(avg, AnalysisTool.getAverageRevenue());
     }
 
     @Test
     void getBestSellingBook() {
-        //TODO
-        fail("Not implemented yet");
+        TransactionLog.clear();
+        addTestOrders();
+
+        Book b2 = new Book("book2", "author", 2000,
+                Book.Category.SCIENCE, Book.Condition.NEW,
+                5.99, "124");
+
+        assertEquals(b2, AnalysisTool.getBestSellingBook());
     }
 
     @Test
     void getBestSellingCategory() {
-        //TODO
-        fail("Not implemented yet");
+        TransactionLog.clear();
+        addTestOrders();
+
+        assertEquals(Book.Category.SCIENCE, AnalysisTool.getBestSellingCategory());
     }
 
     //---------------
@@ -134,4 +155,38 @@ class AnalysisToolTest {
         UserStore.save(users);
     }
 
+    /**
+     * 4 orders
+     */
+    private void addTestOrders(){
+        //create book list
+        List<Book> books = new ArrayList<>();
+
+        Book b1 = new Book("book", "author", 2000,
+                Book.Category.OTHER, Book.Condition.NEW,
+                10.99, "123");
+
+        Book b2 = new Book("book2", "author", 2000,
+                Book.Category.SCIENCE, Book.Condition.NEW,
+                5.99, "124");
+
+        books.add(b1);
+        books.add(b2);
+
+        //create users
+        User u1 = new User("buyer1", "word", User.Role.BUYER);
+        User u2 = new User("buyer2", "word", User.Role.BUYER);
+        User u3 = new User("buyer3", "word", User.Role.BUYER);
+
+        //create orders and add to transactionLog
+        TransactionLog.add(new Order(u1, books)); //10.99 + 5.99
+        TransactionLog.add(new Order(u2, books)); //10.99 + 5.99
+
+        books.add(b2);
+        TransactionLog.add(new Order(u3, books)); //10.99 + 5.99 + 5.99
+
+        books.removeFirst();
+        books.removeLast();
+        TransactionLog.add(new Order(u3, books)); //5.99
+    }
 }
