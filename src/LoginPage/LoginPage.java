@@ -1,5 +1,7 @@
 package LoginPage;
 
+import AdminView.TransactionLog;
+import Data.Order;
 import Data.User;
 import Data.BookStore;
 import Data.OrderStore;
@@ -240,6 +242,12 @@ public class LoginPage extends Application {
         try {
             BookStore.load();    // touch-create books.txt
             OrderStore.load();   // touch-create orders.txt
+
+            //TODO: remove later once loadData() is working
+            for(Order o : OrderStore.getAll()){
+                TransactionLog.add(o);
+            }
+
         } catch (IOException ex) {
             ex.printStackTrace();      // or show an Alert dialog
         }
