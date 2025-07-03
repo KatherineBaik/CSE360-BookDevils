@@ -26,7 +26,7 @@ class AnalysisToolTest {
             saveTestUsers();
             UserManager.loadData();
 
-            assertEquals(4, AnalysisTool.getTotalUsers());
+            assertEquals(5, AnalysisTool.getTotalUsers());
 
         }
         catch (Exception ex){
@@ -42,7 +42,7 @@ class AnalysisToolTest {
             UserManager.loadData();
 
             assertEquals(2, AnalysisTool.getTotalUsers(User.Role.BUYER));
-            assertEquals(1, AnalysisTool.getTotalUsers(User.Role.SELLER));
+            assertEquals(2, AnalysisTool.getTotalUsers(User.Role.SELLER));
             assertEquals(1, AnalysisTool.getTotalUsers(User.Role.ADMIN));
         }
         catch (Exception ex){
@@ -127,16 +127,24 @@ class AnalysisToolTest {
     }
 
     @Test
+    void getTotalBooksAvailable(){
+        //TODO
+        fail("Not implemented yet");
+    }
+
+    @Test
     void getAvgBookPrice() {
         //TODO
         fail("Not implemented yet");
     }
 
+    //----------------
     //HELPER FUNCTIONS
+    //----------------
 
-    /** 4 users,
+    /** 5 users,
      *  2 buyers,
-     *  1 seller,
+     *  2 sellers,
      *  1 admin
      */
     private void saveTestUsers() throws IOException {
@@ -147,6 +155,8 @@ class AnalysisToolTest {
         users.getLast().setSuspended(true);
 
         users.add(new User("seller1", "word", User.Role.SELLER));
+
+        users.add(new User("seller2", "word", User.Role.SELLER));
         users.getLast().setSuspended(true);
 
         users.add(new User("admin1", "word", User.Role.ADMIN));
