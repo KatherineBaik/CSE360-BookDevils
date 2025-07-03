@@ -4,17 +4,20 @@ import Data.User;
 
 import LoginPage.LoginPage;
 import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+
+import java.io.IOException;
 
 /**
  * Very small Admin dashboard so LoginPage can launch it.
@@ -26,11 +29,16 @@ public class AdminPage extends Application {
     private final User admin;          // logged-in admin
 
     /* Called by LoginPage */
-    public AdminPage(User admin) {
+    public AdminPage(User admin) throws IOException {
         this.admin = admin;
 
         width = 800;
         height = 500;
+
+        //load data
+
+        // TransactionLog.loadData(); TODO: CURRENTLY DOES NOT WORK!!!
+        UserManager.loadData();
     }
 
     /* No-arg constructor for JavaFX launcher – never used directly */
@@ -40,7 +48,6 @@ public class AdminPage extends Application {
     public void start(Stage stage){
         //Create the layout
         HBox mainLayout = new HBox();
-        mainLayout.setMinSize(width, height);
         mainLayout.setAlignment(Pos.TOP_RIGHT);
 
         //------------------
@@ -68,12 +75,13 @@ public class AdminPage extends Application {
 
         logoutButton.setOnAction(e -> {
             LoginPage loginPage = new LoginPage();
-            loginPage.start(stage);
+            loginPage.start(new Stage());
+            stage.close();
         });
 
         //------------------
         //set and show scene
-        Scene scene = new Scene(mainLayout);
+        Scene scene = new Scene(mainLayout, width, height);
         stage.setScene(scene);
         stage.show();
     }
@@ -103,6 +111,30 @@ public class AdminPage extends Application {
 
         VBox layout = new VBox();
         layout.setPadding(new Insets(20));
+
+        //overviews at the top
+
+        //table of users
+        TableView<User> userTable = new TableView<>();
+        ObservableList<User> users = FXCollections.observableArrayList(UserManager.getUserList().values());
+        userTable.setItems(users);
+
+        TableColumn<User, String> asuIDCol= new TableColumn<>("ID");
+        asuIDCol.setCellValueFactory(new PropertyValueFactory<>("asuId"));
+        TableColumn<User, String> statusCol = new TableColumn<>("Status");
+        statusCol.setCellValueFactory(d -> {
+            if(d.getValue().isSuspended()) return new SimpleStringProperty("Suspended");
+            else return new SimpleStringProperty("Active");
+        });
+        TableColumn<User, String> roleCol = new TableColumn<>("Role");
+        roleCol.setCellValueFactory(d ->
+                new SimpleStringProperty(d.getValue().getRole().toString())
+        );
+
+        userTable.getColumns().addAll(asuIDCol, statusCol, roleCol);
+        layout.getChildren().add(userTable);
+
+        //table of books?
 
 
         dashboardTab.setContent(layout);
@@ -138,6 +170,9 @@ public class AdminPage extends Application {
 
         VBox layout = new VBox();
         layout.setPadding(new Insets(20));
+
+        //create the table of orders
+
 
 
         transactionsTab.setContent(layout);
