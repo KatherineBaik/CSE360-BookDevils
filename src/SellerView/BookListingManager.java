@@ -1,87 +1,128 @@
-package SellerView;
-
-import Data.Book;
-
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import Data.Book;
 
 /**
  * BookListingManager is responsible for managing all books listed by a seller.
- * This class stores the seller's book data and performs listing-related actions.
- * 
- * Collaborates with:
- * - Book (data class): Each listing is a Book object.
- * - SellerPage (UI logic): Calls methods here to update listings from the Seller UI.
+ * This class uses static methods to handle persistence and CRUD operations.
  */
 public class BookListingManager {
-    private List<Book> listings; // Data: holds all books listed by the seller
+    private static final String FILE_PATH = "seller_listings.csv";
+    private static List<Book> listings = new ArrayList<>();
 
-    public BookListingManager() {
-        listings = new ArrayList<>();
+    // Load existing listings on class load
+    static {
+        loadFromFile();
     }
 
-    /**
-     * Adds a book to the seller’s listings.
-     * Called from SellerPage when the seller submits a listing form.
-     * Depends on Book class to hold book information like title, author, and price.
-     */
-    public void createListing(Book book) {
-        if (book == null || book.getTitle().isEmpty() || book.getSellingPrice() <= 0) {
-            System.out.println("Invalid book listing. Check all fields.");
-            return;
-        }
+    public static void createListing(Book book) {
         listings.add(book);
-        System.out.println("Book listed: " + book.getTitle());
+        saveToFile();
     }
 
-    /**
-     * Removes a book from the seller’s listings.
-     * Typically triggered by SellerPage when a seller clicks “Remove”.
-     */
-    public void removeListing(Book book) {
-        if (listings.remove(book)) {
-            System.out.println("Book removed: " + book.getTitle());
-        } else {
-            System.out.println("Book not found in listings.");
-        }
-    }
-
-    /**
-     * Searches listings by book title.
-     * Useful in the Seller UI for “Edit” or “Search” features.
-     */
-    public Book findListingByTitle(String title) {
-        for (Book b : listings) {
-            if (b.getTitle().equalsIgnoreCase(title)) {
-                return b;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Edits an existing listing by replacing it with a new Book object.
-     * Used when the seller updates listing details like price or condition.
-     * Input: old book title (identifier), new Book (edited values)
-     */
-    public boolean editListing(String oldTitle, Book updatedBook) {
+    public static boolean updateListing(String oldTitle, Book updatedBook) {
         for (int i = 0; i < listings.size(); i++) {
-            if (listings.get(i).getTitle().equalsIgnoreCase(oldTitle)) {
+            Book b = listings.get(i);
+            if (b.getTitle().equals(oldTitle)) {
                 listings.set(i, updatedBook);
-                System.out.println("Listing updated for: " + updatedBook.getTitle());
+                saveToFile();
                 return true;
             }
         }
-        System.out.println("Book not found: " + oldTitle);
+        System.out.println("[WARN] Book not found for update: " + oldTitle);
         return false;
     }
 
+    public static boolean deleteListing(String title) {
+        for (Book b : listings) {
+            if (b.getTitle().equals(title)) {
+                listings.remove(b);
+                saveToFile();
+                return true;
+            }
+        }
+        System.out.println("[WARN] Book not found for deletion: " + title);
+        return false;
+    }
+
+    public static List<Book> getAllListings() {
+        return new ArrayList<>(listings);
+    }
+
+    public static int getTotalListed() {
+        return listings.size();
+    }
+
+    public static int getTotalSold() {
+        int soldCount = 0;
+        for (Book b : listings) {
+            if (b.isSold()) soldCount++;
+        }
+        return soldCount;
+    }
+
+    public static int getTotalOrders() {
+        // each sold book counts as one order
+        return getTotalSold();
+    }
+
     /**
-     * Returns all books currently listed by the seller.
-     * Used by SellerPage to populate the dashboard inventory table.
+     * Loads existing listings from a CSV file.
+     * CSV columns: title,author,publishedYear,category,condition,originalPrice,sellingPrice,isSold
      */
-    public List<Book> getAllListings() {
-        return listings;
+    private static void loadFromFile() {
+        File file = new File(FILE_PATH);
+        if (!file.exists()) return;
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            listings.clear();
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                Book b = new Book(
+                    parts[0],
+                    parts[1],
+                    Integer.parseInt(parts[2]),
+                    Book.Category.valueOf(parts[3]),
+                    Book.Condition.valueOf(parts[4]),
+                    Double.parseDouble(parts[5])
+                );
+                b.setSellingPrice(Double.parseDouble(parts[6]));
+                b.setSold(Boolean.parseBoolean(parts[7]));
+                listings.add(b);
+            }
+        } catch (IOException | IllegalArgumentException e) {
+            System.out.println("[ERROR] Failed to load listings: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Persists current listings to a CSV file.
+     */
+    private static void saveToFile() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
+            for (Book b : listings) {
+                writer.write(String.join(",",
+                    b.getTitle(),
+                    b.getAuthor(),
+                    String.valueOf(b.getPublishedYear()),
+                    b.getCategory().name(),
+                    b.getCondition().name(),
+                    String.valueOf(b.getOriginalPrice()),
+                    String.valueOf(b.getSellingPrice()),
+                    String.valueOf(b.isSold())
+                ));
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("[ERROR] Failed to save listings: " + e.getMessage());
+        }
     }
 }
+
 
