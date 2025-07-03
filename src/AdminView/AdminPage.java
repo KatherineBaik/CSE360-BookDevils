@@ -174,7 +174,6 @@ public class AdminPage extends Application {
         //create the table of orders
 
 
-
         transactionsTab.setContent(layout);
         return transactionsTab;
     }
