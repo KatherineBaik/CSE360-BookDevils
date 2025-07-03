@@ -5,9 +5,9 @@ import javafx.beans.property.*;
 public class User {
     /** we keep leading zeros, so store the ASU ID as a String */
     private final StringProperty asuId;
-    private StringProperty password;
-    private ObjectProperty<Role> role;
-    private BooleanProperty suspended;
+    private final StringProperty password;
+    private final ObjectProperty<Role> role;
+    private final BooleanProperty suspended;
 
     public User(String asuId, String password, Role role) {
         this.asuId = new SimpleStringProperty(asuId);
