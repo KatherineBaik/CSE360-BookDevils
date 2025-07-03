@@ -120,8 +120,12 @@ class TransactionLogTest {
         List<Book> books = createTestBookList();
 
         Order order1 = new Order(user1, books); //first
+        order1.setTimestamp(order1.getTimestamp().minusSeconds(1));
+
         Order order2 = new Order(user1, books); //second
+
         Order order3 = new Order(user2, books); //third
+        order3.setTimestamp(order3.getTimestamp().plusSeconds(1));
 
         //add them out of order
         orderList.add(order2);
