@@ -116,14 +116,13 @@ public class AnalysisTool {
     }
 
     /** Calculate the best-selling book category */
-    public static Book.Category getBestSellingCategory(){
+    public static Book.Category getHighestGrossingCategory(){
         Book.Category bestSelling = null;
-        int bestSellingTotal  = 0;
 
         //holds the total amounts of each book category
-        Map<Book.Category, Integer> totals = new HashMap<>();
+        Map<Book.Category, Double> totals = new HashMap<>();
         for(Book.Category category : Book.Category.values()){
-            totals.put(category, 0);
+            totals.put(category, 0.0);
         }
 
         //go through all orders in TransactionLog
@@ -134,10 +133,9 @@ public class AnalysisTool {
             //loop through the booklist of each order
             bookList = o.getBooks();
             for(Book b : bookList){
-                int value = totals.get(b.getCategory()) + 1;
+                double value = totals.get(b.getCategory()) + b.getSellingPrice();
 
-                if(value > bestSellingTotal){
-                    value = bestSellingTotal;
+                if(bestSelling == null || value > totals.get(bestSelling)){
                     bestSelling = b.getCategory();
                 }
 

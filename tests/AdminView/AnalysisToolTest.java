@@ -110,11 +110,11 @@ class AnalysisToolTest {
     }
 
     @Test
-    void getBestSellingCategory() {
+    void getHighestGrossingCategory() {
         TransactionLog.clear();
         addTestOrders();
 
-        assertEquals(Book.Category.SCIENCE, AnalysisTool.getBestSellingCategory());
+        assertEquals(Book.Category.OTHER, AnalysisTool.getHighestGrossingCategory());
     }
 
     //---------------
