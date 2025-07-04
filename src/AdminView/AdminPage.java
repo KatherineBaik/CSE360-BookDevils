@@ -7,6 +7,7 @@ import Data.BookStore;
 import Data.OrderStore;
 
 import LoginPage.LoginPage;
+import SellerView.BookListingManager;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -31,13 +32,16 @@ public class AdminPage extends Application {
     double width, height;
     private final User admin;
 
+    ObservableList<User> users;
+
     public AdminPage(User admin) throws IOException {
         this.admin = admin;
         width = 1000;
         height = 650;
         UserManager.loadData();
-        BookStore.load();
-        OrderStore.load();
+        TransactionLog.loadData();
+
+        users = FXCollections.observableArrayList(UserManager.getUserList().values());
     }
 
     public AdminPage() {
@@ -115,7 +119,7 @@ public class AdminPage extends Application {
         // User Table Section
         Label userMgmt = createHeader("User Management");
 
-        TableView<User> table = new TableView<>(FXCollections.observableArrayList(UserManager.getUserList().values()));
+        TableView<User> table = new TableView<>(users);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setPlaceholder(new Label("No users found."));
 
@@ -124,7 +128,7 @@ public class AdminPage extends Application {
         nameCol.setCellValueFactory(new PropertyValueFactory<>("asuId"));
 
         TableColumn<User, String> statusCol = new TableColumn<>("Status");
-        statusCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().isSuspended() ? "Suspended" : "Active"));
+        statusCol.setCellValueFactory(d -> d.getValue().suspendedTextProperty());
 
         TableColumn<User, String> roleCol = new TableColumn<>("Role");
         roleCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getRole().toString()));
@@ -132,11 +136,35 @@ public class AdminPage extends Application {
         TableColumn<User, String> actionCol = new TableColumn<>("Action");
         actionCol.setCellFactory(col -> new TableCell<>() {
             private final Hyperlink delete = new Hyperlink("Delete");
-            private final Hyperlink suspend = new Hyperlink("Suspend");
+            private final Hyperlink suspend = new Hyperlink("Suspend/Unsuspend");
 
             {
                 delete.setStyle("-fx-text-fill: red;");
                 suspend.setStyle("-fx-text-fill: #750029;");
+
+                //Set hyperlink actions:
+                //delete:
+                delete.setOnAction(e -> {
+                    User user = getTableView().getItems().get(getIndex());
+                    try{
+                        users.remove(user);
+                        UserManager.removeUser(user.getAsuId());
+                    }
+                    catch (IOException ex){
+                        ex.printStackTrace();
+                    }
+                });
+
+                //suspend:
+                suspend.setOnAction(e -> {
+                    User user = getTableView().getItems().get(getIndex());
+                    try{
+                        UserManager.setSuspended(user.getAsuId(), !user.isSuspended());
+                    }
+                    catch (IOException ex){
+                        ex.printStackTrace();
+                    }
+                });
             }
 
             @Override

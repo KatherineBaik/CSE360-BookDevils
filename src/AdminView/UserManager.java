@@ -12,6 +12,7 @@ public class UserManager {
     /** Loads all user data stored in file.
      * NOTE: Must be used before using this class. */
     public static void loadData() throws IOException{
+        if(userList != null) userList.clear();
         userList = UserStore.load();
     }
 
@@ -33,10 +34,17 @@ public class UserManager {
         return userList.size();
     }
 
-    /** Returns the user corresponding to the ASU ID.
-     * If the user doesn't exist, returns null. */
-    public static User findUser(String ID){
-        return userList.get(ID);
+    /** Finds and suspends/unsuspends a user. Returns false if user doesn't exist. */
+    public static boolean setSuspended(String userID, boolean suspend) throws IOException{
+        User user = userList.get(userID);
+        if(user != null){
+            user.setSuspended(suspend);
+            saveData();
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
     /** Returns true if the user is successfully deleted.
@@ -46,6 +54,4 @@ public class UserManager {
         saveData();
         return success;
     }
-
-    //Suggestion: Edit a user???
 }

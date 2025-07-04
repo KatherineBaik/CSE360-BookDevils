@@ -8,12 +8,14 @@ public class User {
     private final StringProperty password;
     private final ObjectProperty<Role> role;
     private final BooleanProperty suspended;
+    private final StringProperty suspendedText;
 
     public User(String asuId, String password, Role role) {
         this.asuId = new SimpleStringProperty(asuId);
         this.password = new SimpleStringProperty(password);
         this.role = new SimpleObjectProperty<>(role);
         this.suspended = new SimpleBooleanProperty(false);
+        suspendedText = new SimpleStringProperty("Active");
     }
 
     // ——— getters & setters ———
@@ -25,7 +27,9 @@ public class User {
     public void   setRole(Role r)  { this.role.set(r); }
 
     public boolean isSuspended()   { return suspended.get(); }
-    public void    setSuspended(boolean s) { this.suspended.set(s); }
+    public void    setSuspended(boolean s) { this.suspended.set(s); suspendedText.set(s ? "Suspended" : "Active"); }
+
+    public StringProperty suspendedTextProperty() {return suspendedText; };
 
     @Override public String toString() {
         return String.format("asuId=%s, role=%s", asuId, role);
@@ -46,7 +50,7 @@ public class User {
         String[] parts = line.split(",", -1);
         if (parts.length < 4) throw new IllegalArgumentException("Bad line: " + line);
         User u = new User(parts[0], parts[1], Role.valueOf(parts[2]));
-        u.suspended.set(Boolean.parseBoolean(parts[3]));
+        u.setSuspended(Boolean.parseBoolean(parts[3]));
         return u;
     }
 
