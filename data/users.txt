@@ -1,6 +1,6 @@
 # asuId,password,role,suspended (auto-generated)
+seller1,word,SELLER,false
+admin1,word,ADMIN,false
+seller2,word,SELLER,true
 buyer1,word,BUYER,false
 buyer2,word,BUYER,true
-seller1,word,SELLER,false
-seller2,word,SELLER,true
-admin1,word,ADMIN,false
