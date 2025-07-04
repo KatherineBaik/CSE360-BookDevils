@@ -244,7 +244,7 @@ class AnalysisToolTest {
         BookListingManager.createListing(b4);
         BookListingManager.createListing(b5);
 
-        BookListingManager.markSold("book2");
-        BookListingManager.markSold("book5");
+        BookListingManager.markSold(b2.getId());
+        BookListingManager.markSold(b5.getId());
     }
 }

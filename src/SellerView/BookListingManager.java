@@ -24,35 +24,35 @@ public class BookListingManager {
         saveToFile();
     }
 
-    public static boolean updateListing(String oldTitle, Book updatedBook) {
+    public static boolean updateListing(String id, Book updatedBook) {
         for (int i = 0; i < listings.size(); i++) {
             Book b = listings.get(i);
-            if (b.getTitle().equals(oldTitle)) {
+            if (b.getId().equals(id)) {
                 listings.set(i, updatedBook);
                 saveToFile();
                 return true;
             }
         }
-        System.out.println("[WARN] Book not found for update: " + oldTitle);
+        System.out.println("[WARN] Book not found for update: " + id);
         return false;
     }
 
-    public static boolean deleteListing(String title) {
+    public static boolean deleteListing(String id) {
         for (Book b : listings) {
-            if (b.getTitle().equals(title)) {
+            if (b.getId().equals(id)) {
                 listings.remove(b);
                 saveToFile();
                 return true;
             }
         }
-        System.out.println("[WARN] Book not found for deletion: " + title);
+        System.out.println("[WARN] Book not found for deletion: " + id);
         return false;
     }
 
     /** Called by CheckoutHandler after a successful purchase */
-    public static void markSold(String bookId) {
+    public static void markSold(String id) {
         for(Book b : listings){
-            if (b != null && !b.isSold()) {
+            if (b != null && b.getId().equals(id)) {
                 b.markAsSold();
                 saveToFile();
             }
@@ -104,6 +104,12 @@ public class BookListingManager {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    /** FOR TESTING PURPOSES */
+    public static void clear(){
+        listings.clear();
+        saveToFile();
     }
 }
 
