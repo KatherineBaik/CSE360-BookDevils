@@ -76,13 +76,11 @@ public class AnalysisTool {
 
         //go through all orders in TransactionLog
         List<Order> orderList = TransactionLog.getOrderList();
-        List<Book> bookList = null;
 
         //loop through orders
         for(Order o : orderList){
             //loop through books
-            bookList = o.getBooks();
-            for(Book b : bookList){
+            for(Book b : o.getBooks()){
                 // if a book does not exist in the map, add it
                 // and set the value to the book's selling price
                 if(!totals.containsKey(b.getSellerId())){
@@ -119,12 +117,10 @@ public class AnalysisTool {
 
         //go through all orders in TransactionLog
         List<Order> orderList = TransactionLog.getOrderList();
-        List<Book> bookList = null;
 
         for(Order o : orderList){
             //loop through the booklist of each order
-            bookList = o.getBooks();
-            for(Book b : bookList){
+            for(Book b : o.getBooks()){
                 //if a book does not exist in the map, add it and set the value to 1
                 if(!totals.containsKey(b)){
                     totals.put(b, 1);
@@ -168,8 +164,7 @@ public class AnalysisTool {
 
         for(Order o : orderList){
             //loop through the booklist of each order
-            bookList = o.getBooks();
-            for(Book b : bookList){
+            for(Book b : o.getBooks()){
                 double value = totals.get(b.getCategory()) + b.getSellingPrice();
 
                 if(bestSelling == null || value > totals.get(bestSelling)){
