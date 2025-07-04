@@ -81,34 +81,74 @@ public class LoginPage extends Application {
         HBox signupBox = new HBox(5, signupPrompt, signupLink);
         signupBox.setAlignment(Pos.CENTER);
 
-        /* ==========  Sign-up link implementation  ========== */
-
         signupLink.setOnAction(e -> {
-            Dialog<Boolean> dlg = new Dialog<>();
-            dlg.setTitle("Create account");
+            Stage signupStage = new Stage();
+            signupStage.setTitle("Book Devils - Create Account");
 
-            // inputs …
-            TextField id  = new TextField();
-            PasswordField pw = new PasswordField();
-            ComboBox<User.Role> role = new ComboBox<>();
-            role.getItems().addAll(User.Role.values());
+            // === Header Text ===
+            Label heading = new Label("Create your Account 👋");
+            heading.setFont(Font.font("Arial", 24));
 
-            GridPane g = new GridPane();
-            g.setHgap(10); g.setVgap(10);
-            g.addRow(0, new Label("ASU ID:"), id);
-            g.addRow(1, new Label("Password:"), pw);
-            g.addRow(2, new Label("Role:"), role);
-            dlg.getDialogPane().setContent(g);
+            Label subTexts = new Label("Ready to begin your journey?\nIt's your time. Your space. Your marketplace.\nSign up to start listing, discovering, and connecting.");
+            subTexts.setTextFill(Color.DARKGRAY);
 
-            dlg.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-            dlg.setResultConverter(bt -> bt == ButtonType.OK);
+            // === Fields ===
+            TextField newIdField = new TextField();
+            newIdField.setPromptText("1234567890");
 
-            dlg.showAndWait().filter(r -> r).ifPresent(r -> {
-                boolean ok = AuthenticationService.register(id.getText(), pw.getText(), role.getValue());
-                setMessage(ok ? "Account created!" : "ID already exists.", ok ? Color.GREEN : Color.RED);
+            PasswordField newPwField = new PasswordField();
+            newPwField.setPromptText("At least 8 characters");
+
+            ComboBox<User.Role> newRoleBox = new ComboBox<>();
+            newRoleBox.getItems().addAll(User.Role.values());
+            newRoleBox.setPromptText("Role");
+
+            Button createBtn = new Button("Create Account");
+            createBtn.setMaxWidth(Double.MAX_VALUE);
+            createBtn.setStyle("-fx-background-color: #1a1a2e; -fx-text-fill: white;");
+
+            Label signupMessage = new Label();
+
+            createBtn.setOnAction(ev -> {
+                boolean ok = AuthenticationService.register(
+                        newIdField.getText().trim(),
+                        newPwField.getText(),
+                        newRoleBox.getValue()
+                );
+                signupMessage.setText(ok ? "Account created!" : "ID already exists.");
+                signupMessage.setTextFill(ok ? Color.GREEN : Color.RED);
+                if (ok) signupStage.close();
             });
-        });
 
+            // === Left column layout ===
+            VBox form = new VBox(10,
+                    heading, subText,
+                    new Label("ASU ID"), newIdField,
+                    new Label("Password"), newPwField,
+                    new Label("Role Selection"), newRoleBox,
+                    createBtn,
+                    signupMessage
+            );
+            form.setPadding(new Insets(30));
+            form.setMaxWidth(350);
+
+            // === Right column logo ===
+            ImageView logoView = loadLogo();  // reuse existing method
+            VBox logoBox = new VBox(logoView);
+            logoBox.setAlignment(Pos.CENTER);
+            logoBox.setPadding(new Insets(30));
+
+            // === Main layout ===
+            HBox mainLayout = new HBox(form, logoBox);
+            mainLayout.setSpacing(30);
+            mainLayout.setAlignment(Pos.CENTER);
+            mainLayout.setStyle("-fx-background-color: white;");
+
+            // === Scene and Stage ===
+            Scene signupScene = new Scene(mainLayout, 800, 500);
+            signupStage.setScene(signupScene);
+            signupStage.show();
+        });
 
         /* ==========  Left column (form)  ========== */
         VBox form = new VBox(10,
