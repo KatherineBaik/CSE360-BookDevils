@@ -160,7 +160,6 @@ public class AnalysisTool {
 
         //go through all orders in TransactionLog
         List<Order> orderList = TransactionLog.getOrderList();
-        List<Book> bookList = null;
 
         for(Order o : orderList){
             //loop through the booklist of each order
