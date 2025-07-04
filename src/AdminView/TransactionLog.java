@@ -2,41 +2,111 @@ package AdminView;
 
 import Data.Order;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class TransactionLog {
-    private static List<Order> orderList;
+/**
+ * Centralised storage for every completed checkout.
+ * <p>
+ * It keeps an <b>in‑memory</b> {@code ArrayList<Order>} while the
+ * program runs and serialises the whole list to a file when asked.
+ * <p>
+ * Design choices:
+ * <ul>
+ *   <li>Uses Java built‑in object serialisation – keep it simple for now.</li>
+ *   <li>Thread‑safe enough for a desktop app by synchronising write access.</li>
+ * </ul>
+ */
+public final class TransactionLog {
 
-    /** Loads all transaction data stored in file.
-     * NOTE: Must be used before using this class. */
-    public static void loadData(){
-        //TODO
+    private TransactionLog() { /* no instances */ }
+
+    /* ------------------------------------------------------------------
+     *  Static state
+     * ------------------------------------------------------------------ */
+    private static final List<Order> ORDER_LIST = new ArrayList<>();
+
+    /** Location on disc (relative to working dir) */
+    private static final Path FILE = Path.of("data", "transactions.ser");
+
+    /* ------------------------------------------------------------------
+     *  Persistence API
+     * ------------------------------------------------------------------ */
+
+    /**
+     * Loads previously saved orders from {@link #FILE} into memory.
+     * Call once when the application starts <b>before</b> anybody
+     * queries the log.
+     */
+    @SuppressWarnings("unchecked")
+    public static void loadData() {
+        if (!Files.exists(FILE)) return;               // first run: nothing to load
+        try (ObjectInputStream in = new ObjectInputStream(Files.newInputStream(FILE))) {
+            ORDER_LIST.clear();
+            ORDER_LIST.addAll((List<Order>) in.readObject());
+        } catch (IOException | ClassNotFoundException ex) {
+            ex.printStackTrace();      // optional: log properly
+        }
     }
 
-    /** Saves all transaction data to file.
-     * NOTE: Should be used before application closes, or when updating data in the list. */
-    public static void saveData() throws IOException {
-        //TODO
+    /**
+     * Serialises the in‑memory list back to {@link #FILE}. Invoke this once
+     * on clean application shutdown or whenever you commit a batch of new
+     * orders.
+     */
+    public static void saveData() {
+        try {
+            Files.createDirectories(FILE.getParent());
+            try (ObjectOutputStream out = new ObjectOutputStream(Files.newOutputStream(FILE))) {
+                out.writeObject(ORDER_LIST);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
-    //--------------------------
+    /* ------------------------------------------------------------------
+     *  Basic collection‑style operations
+     * ------------------------------------------------------------------ */
 
-    /** Returns the underlying list used by this class */
-    public static List<Order> getOrderList(){
-        return orderList;
+    public static List<Order> getOrderList() { return ORDER_LIST; }
+    public static int         size()         { return ORDER_LIST.size(); }
+
+    /** Adds an order and immediately persists the change.
+     * NOTE: Does not autosave currently */
+    public static synchronized void add(Order order) {
+        ORDER_LIST.add(order);
+        //saveData();                       // autosave for safety; remove if undesired
     }
 
-    /** Returns the total number of orders. */
-    public static int size(){
-        return orderList.size();
+    /* ------------------------------------------------------------------
+     *  Convenience search / sort helpers
+     * ------------------------------------------------------------------ */
+
+    /** Returns every order placed by the given buyer ASU id. */
+    public static List<Order> byBuyer(String asuId) {
+        return ORDER_LIST.stream()
+                .filter(o -> o.getBuyer().getAsuId().equals(asuId))
+                .collect(Collectors.toList());
     }
 
-    /** Add an order to the list */
-    public static void add(Order order){
-        orderList.addLast(order);
+    /** Ascending sort by timestamp (mutates internal list). */
+    public static void sortByDate() {
+        ORDER_LIST.sort(Comparator.comparing(Order::getTimestamp));
     }
 
-    //Suggestion: Search and sort methods?
+    /** Descending sort by total price (mutates internal list). */
+    public static void sortByValue() {
+        ORDER_LIST.sort(Comparator.comparingDouble(Order::getTotalPrice).reversed());
+    }
 
+    /** FOR TESTING PURPOSES */
+    public static synchronized void clear(){
+        ORDER_LIST.clear();
+    }
 }

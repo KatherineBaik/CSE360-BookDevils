@@ -3,6 +3,7 @@ package AdminView;
 import Data.Book;
 import Data.Order;
 import Data.User;
+import SellerView.BookListingManager;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -67,12 +68,45 @@ public class AnalysisTool {
         return total;
     }
 
-    /** Calculates the average revenue gained from a sales order in TransactionLog. */
-    public static double getAverageRevenue(){
-        return getTotalRevenue() / getTotalOrders();
+    /** Finds and returns the ID of the highest grossing seller. */
+    public static String getHighestGrossingSeller(){
+        String highest = "n/a";
+        //create map to track the totals of each seller
+        Map<String, Double> totals = new HashMap<>();
+
+        //go through all orders in TransactionLog
+        List<Order> orderList = TransactionLog.getOrderList();
+
+        //loop through orders
+        for(Order o : orderList){
+            //loop through books
+            for(Book b : o.getBooks()){
+                // if a book does not exist in the map, add it
+                // and set the value to the book's selling price
+                if(!totals.containsKey(b.getSellerId())){
+                    totals.put(b.getSellerId(), b.getSellingPrice());
+
+                    if(highest.equals("n/a")){
+                        highest = b.getSellerId();
+                    }
+                }
+                //otherwise, add selling price to the value
+                else{
+                    double val = totals.get(b.getSellerId()) + b.getSellingPrice();
+
+                    //check if the value is larger than the current bestSellingTotal
+                    if(val > totals.get(highest)){
+                        highest = b.getSellerId();
+                    }
+
+                    totals.replace(b.getSellerId(), val);
+                }
+            }
+        }
+
+        return highest;
     }
 
-    //TEST AND CHECK!!!!
     /** Finds the best-selling book. */
     public static Book getBestSellingBook(){
         Book bestSelling = null;
@@ -83,12 +117,10 @@ public class AnalysisTool {
 
         //go through all orders in TransactionLog
         List<Order> orderList = TransactionLog.getOrderList();
-        List<Book> bookList = null;
 
         for(Order o : orderList){
             //loop through the booklist of each order
-            bookList = o.getBooks();
-            for(Book b : bookList){
+            for(Book b : o.getBooks()){
                 //if a book does not exist in the map, add it and set the value to 1
                 if(!totals.containsKey(b)){
                     totals.put(b, 1);
@@ -116,30 +148,25 @@ public class AnalysisTool {
         return bestSelling;
     }
 
-    //TEST AND CHECK!!!!
     /** Calculate the best-selling book category */
-    public static Book.Category getBestSellingCategory(){
+    public static Book.Category getHighestGrossingCategory(){
         Book.Category bestSelling = null;
-        int bestSellingTotal  = 0;
 
         //holds the total amounts of each book category
-        Map<Book.Category, Integer> totals = new HashMap<>();
+        Map<Book.Category, Double> totals = new HashMap<>();
         for(Book.Category category : Book.Category.values()){
-            totals.put(category, 0);
+            totals.put(category, 0.0);
         }
 
         //go through all orders in TransactionLog
         List<Order> orderList = TransactionLog.getOrderList();
-        List<Book> bookList = null;
 
         for(Order o : orderList){
             //loop through the booklist of each order
-            bookList = o.getBooks();
-            for(Book b : bookList){
-                int value = totals.get(b.getCategory()) + 1;
+            for(Book b : o.getBooks()){
+                double value = totals.get(b.getCategory()) + b.getSellingPrice();
 
-                if(value > bestSellingTotal){
-                    value = bestSellingTotal;
+                if(bestSelling == null || value > totals.get(bestSelling)){
                     bestSelling = b.getCategory();
                 }
 
@@ -156,19 +183,28 @@ public class AnalysisTool {
 
     /** Get the total number of books in BookListingManager */
     public static int getTotalBooks(){
-        //TODO
-        return 0;
+        return BookListingManager.getTotalListed();
+    }
+
+    /** Get the number of books that are sold/available in BookListingManager */
+    public static int getTotalBooks(boolean sold){
+        if(sold){
+            return BookListingManager.getTotalSold();
+        }
+        else{
+            return BookListingManager.getTotalListed() - BookListingManager.getTotalSold();
+        }
     }
 
     /** Calculates the average price of a book in BookListingManager. */
     public static double getAvgBookPrice(){
-        //TODO
+        double total = 0.0;
 
-        //Get all books
-        //Total up prices
-        //Divide by total books
+        for(Book b : BookListingManager.getAllListings()){
+            total += b.getSellingPrice();
+        }
 
-        return 0.0;
+        return total / BookListingManager.getTotalListed();
     }
 
 }

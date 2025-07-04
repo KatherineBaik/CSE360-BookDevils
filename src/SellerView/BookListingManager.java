@@ -1,21 +1,17 @@
 package SellerView;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import Data.Book;
+import Data.BookStore;
 
 /**
  * BookListingManager is responsible for managing all books listed by a seller.
  * This class uses static methods to handle persistence and CRUD operations.
  */
 public class BookListingManager {
-    private static final String FILE_PATH = "seller_listings.csv";
     private static List<Book> listings = new ArrayList<>();
 
     // Load existing listings on class load
@@ -28,33 +24,51 @@ public class BookListingManager {
         saveToFile();
     }
 
-    public static boolean updateListing(String oldTitle, Book updatedBook) {
+    public static boolean updateListing(String id, Book updatedBook) {
         for (int i = 0; i < listings.size(); i++) {
             Book b = listings.get(i);
-            if (b.getTitle().equals(oldTitle)) {
+            if (b.getId().equals(id)) {
                 listings.set(i, updatedBook);
                 saveToFile();
                 return true;
             }
         }
-        System.out.println("[WARN] Book not found for update: " + oldTitle);
+        System.out.println("[WARN] Book not found for update: " + id);
         return false;
     }
 
-    public static boolean deleteListing(String title) {
+    public static boolean deleteListing(String id) {
         for (Book b : listings) {
-            if (b.getTitle().equals(title)) {
+            if (b.getId().equals(id)) {
                 listings.remove(b);
                 saveToFile();
                 return true;
             }
         }
-        System.out.println("[WARN] Book not found for deletion: " + title);
+        System.out.println("[WARN] Book not found for deletion: " + id);
         return false;
     }
 
+    /** Called by CheckoutHandler after a successful purchase */
+    public static void markSold(String id) {
+        for(Book b : listings){
+            if (b != null && b.getId().equals(id)) {
+                b.markAsSold();
+                saveToFile();
+            }
+        }
+    }
+
+    /** Returns all listings currently in BookListingManager */
     public static List<Book> getAllListings() {
         return new ArrayList<>(listings);
+    }
+
+    /** All books that are NOT sold (for Buyer view) */
+    public static List<Book> getAllListingsNotSold() {
+        return listings.stream()
+                .filter(b -> !b.isSold())
+                .toList();
     }
 
     public static int getTotalListed() {
@@ -69,37 +83,15 @@ public class BookListingManager {
         return soldCount;
     }
 
-    public static int getTotalOrders() {
-        // each sold book counts as one order
-        return getTotalSold();
-    }
-
     /**
      * Loads existing listings from a CSV file.
      * CSV columns: title,author,publishedYear,category,condition,originalPrice,sellingPrice,isSold
      */
     private static void loadFromFile() {
-        File file = new File(FILE_PATH);
-        if (!file.exists()) return;
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            listings.clear();
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                Book b = new Book(
-                    parts[0],
-                    parts[1],
-                    Integer.parseInt(parts[2]),
-                    Book.Category.valueOf(parts[3]),
-                    Book.Condition.valueOf(parts[4]),
-                    Double.parseDouble(parts[5])
-                );
-                b.setSellingPrice(Double.parseDouble(parts[6]));
-                b.setSold(Boolean.parseBoolean(parts[7]));
-                listings.add(b);
-            }
-        } catch (IOException | IllegalArgumentException e) {
-            System.out.println("[ERROR] Failed to load listings: " + e.getMessage());
+        try {
+            listings.addAll(BookStore.load().values());
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -107,24 +99,16 @@ public class BookListingManager {
      * Persists current listings to a CSV file.
      */
     private static void saveToFile() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_PATH))) {
-            for (Book b : listings) {
-                writer.write(String.join(",",
-                    b.getTitle(),
-                    b.getAuthor(),
-                    String.valueOf(b.getPublishedYear()),
-                    b.getCategory().name(),
-                    b.getCondition().name(),
-                    String.valueOf(b.getOriginalPrice()),
-                    String.valueOf(b.getSellingPrice()),
-                    String.valueOf(b.isSold())
-                ));
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            System.out.println("[ERROR] Failed to save listings: " + e.getMessage());
+        try {
+            BookStore.save(listings);
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
+
+    /** FOR TESTING PURPOSES */
+    public static void clear(){
+        listings.clear();
+        saveToFile();
+    }
 }
-
-

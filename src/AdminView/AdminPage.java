@@ -1,34 +1,55 @@
 package AdminView;
 
+import Data.Order;
+import Data.User;
+
+import LoginPage.LoginPage;
 import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
+/**
+ * Very small Admin dashboard so LoginPage can launch it.
+ * Flesh this out later with tables & charts.
+ */
 public class AdminPage extends Application {
     double width, height;
 
-    @Override
-    public void start(Stage stage){
+    private final User admin;          // logged-in admin
+
+    /* Called by LoginPage */
+    public AdminPage(User admin) throws IOException {
+        this.admin = admin;
+
         width = 800;
         height = 500;
 
-        //set title?
-        show(stage);
+        //load data
+
+        // TransactionLog.loadData(); TODO: CURRENTLY DOES NOT WORK!!!
+        UserManager.loadData();
     }
 
-    public void show(Stage stage){
+    /* No-arg constructor for JavaFX launcher – never used directly */
+    public AdminPage() { this.admin = null; }
+
+    @Override
+    public void start(Stage stage){
         //Create the layout
         HBox mainLayout = new HBox();
-        mainLayout.setMinSize(width, height);
         mainLayout.setAlignment(Pos.TOP_RIGHT);
 
         //------------------
@@ -36,7 +57,6 @@ public class AdminPage extends Application {
         Tab dashboardTab = createDashboardTab();
         Tab analysisTab = createAnalysisTab();
         Tab transactionsTab = createTransactionTab();
-
 
         //------------------
         //Create tabPane and add all the tabs
@@ -50,34 +70,21 @@ public class AdminPage extends Application {
         //------------------
         //logout button
         Button logoutButton = new Button("Logout");
-        logoutButton.setPadding(new Insets(10,20,10,20));
+        logoutButton.setMinSize(70, 40);
 
         mainLayout.getChildren().add(logoutButton);
 
         logoutButton.setOnAction(e -> {
-            createPopupMessage("You have been logged out.");
-            //TODO: return to login page
+            LoginPage loginPage = new LoginPage();
+            loginPage.start(new Stage());
+            stage.close();
         });
 
         //------------------
         //set and show scene
-        Scene scene = new Scene(mainLayout);
+        Scene scene = new Scene(mainLayout, width, height);
         stage.setScene(scene);
-        stage.show();
-    }
-
-    /** To make it easier to create popups */
-    private void createPopupMessage(String message){
-        Stage stage = new Stage();
-
-        Label label = new Label(message);
-
-        VBox layout = new VBox(label);
-        layout.setMinSize(200,150);
-        layout.setAlignment(Pos.CENTER);
-
-        Scene scene = new Scene(layout);
-        stage.setScene(scene);
+        stage.setTitle("BookDevils - Admin");
         stage.show();
     }
 
@@ -92,10 +99,51 @@ public class AdminPage extends Application {
         VBox layout = new VBox();
         layout.setPadding(new Insets(20));
 
+        Label mainHeader = new Label("Admin's Dashboard");
+        mainHeader.setFont(new Font(30));
+        layout.getChildren().add(mainHeader);
+
+        //overviews at the top
+        VBox display1 = createValueDisplay(Integer.toString(AnalysisTool.getTotalOrders()), "Total Orders");
+        VBox display2 = createValueDisplay(Integer.toString(AnalysisTool.getTotalBooks(true)), "Total Sold");
+        VBox display3 = createValueDisplay(Integer.toString(AnalysisTool.getTotalBooks()), "Total Products Listed");
+
+        display1.setMinWidth((width-160) / 3);
+        display2.setMinWidth((width-160) / 3);
+        display3.setMinWidth((width-160) / 3);
+
+        HBox displayRow = new HBox(display1, display2, display3);
+        displayRow.setSpacing(14);
+        displayRow.setPadding(new Insets(5));
+
+        layout.getChildren().add(displayRow);
+
+        //table of users
+        Label header1 = createHeader("User Management");
+        TableView<User> userTable = new TableView<>();
+        ObservableList<User> users = FXCollections.observableArrayList(UserManager.getUserList().values());
+        userTable.setItems(users);
+
+        TableColumn<User, String> asuIDCol= new TableColumn<>("ID");
+        asuIDCol.setCellValueFactory(new PropertyValueFactory<>("asuId"));
+        TableColumn<User, String> statusCol = new TableColumn<>("Status");
+        statusCol.setCellValueFactory(d -> {
+            if(d.getValue().isSuspended()) return new SimpleStringProperty("Suspended");
+            else return new SimpleStringProperty("Active");
+        });
+        TableColumn<User, String> roleCol = new TableColumn<>("Role");
+        roleCol.setCellValueFactory(d ->
+                new SimpleStringProperty(d.getValue().getRole().toString())
+        );
+
+        userTable.getColumns().addAll(asuIDCol, statusCol, roleCol);
+        layout.getChildren().addAll(header1, userTable);
 
         dashboardTab.setContent(layout);
         return dashboardTab;
     }
+
+    //-------------------------------------------
 
     private Tab createAnalysisTab(){
         Tab analysisTab = new Tab("Analysis");
@@ -104,21 +152,58 @@ public class AdminPage extends Application {
         VBox layout = new VBox();
         layout.setPadding(new Insets(20));
 
-        // User Overview
-        Label test = new Label("This is a test");
-        test.setFont(new Font(20));
-        Label test2 = new Label("SSS");
+        Label mainHeader = new Label("Analysis");
+        mainHeader.setFont(new Font(30));
+        layout.getChildren().add(mainHeader);
 
-        layout.getChildren().addAll(test, test2);
+        // User Overview
+        VBox userOverviewRow = createDisplayRow("User Overview",
+                createValueDisplay(Integer.toString(AnalysisTool.getTotalUsers()), "Total Registered Users"),
+                createValueDisplay(Integer.toString(AnalysisTool.getTotalUsers(User.Role.SELLER)), "Total sellers"),
+                createValueDisplay(Integer.toString(AnalysisTool.getTotalUsers(User.Role.BUYER)), "Total buyers"),
+                createValueDisplay(Integer.toString(AnalysisTool.getTotalSuspendedUsers()), "Suspended users"));
+
+        userOverviewRow.setPadding(new Insets(10));
+
+        layout.getChildren().addAll(userOverviewRow);
 
         // Book Overview
+        VBox bookOverviewRow = createDisplayRow("Book Overview",
+                createValueDisplay(Integer.toString(AnalysisTool.getTotalBooks()), "Total Books Listed"),
+                createValueDisplay(Integer.toString(AnalysisTool.getTotalBooks(true)), "Books Sold"),
+                createValueDisplay(Integer.toString(AnalysisTool.getTotalBooks(false)), "Books Available"),
+                createValueDisplay(String.format("%.2f", AnalysisTool.getAvgBookPrice()), "AVG. Selling Price"));
+
+        bookOverviewRow.setPadding(new Insets(10));
+
+        layout.getChildren().addAll(bookOverviewRow);
 
         // Sales Insights
+        double revenue = AnalysisTool.getTotalRevenue(); // What happens when the revenue gets too large?
+        String bookTitle = "n/a";
+        if(AnalysisTool.getBestSellingBook() != null){
+            bookTitle = AnalysisTool.getBestSellingBook().getTitle();
+        }
+        String bookCategory = "n/a";
+        if(AnalysisTool.getHighestGrossingCategory() != null){
+            bookCategory = AnalysisTool.getHighestGrossingCategory().toString();
+        }
 
+        VBox salesInsightsRow = createDisplayRow("Sales Insights",
+                createValueDisplay(String.format("%.2f", revenue),"Total Revenue"),
+                createValueDisplay(AnalysisTool.getHighestGrossingSeller(),"Highest Grossing Seller"),
+                createValueDisplay(bookTitle, "Top-Selling Book"),
+                createValueDisplay(bookCategory,"Highest-Grossing Category"));
+
+        salesInsightsRow.setPadding(new Insets(10));
+
+        layout.getChildren().addAll(salesInsightsRow);
 
         analysisTab.setContent(layout);
         return analysisTab;
     }
+
+    //-------------------------------------------
 
     private Tab createTransactionTab(){
         Tab transactionsTab = new Tab("Transactions");
@@ -127,12 +212,72 @@ public class AdminPage extends Application {
         VBox layout = new VBox();
         layout.setPadding(new Insets(20));
 
+        Label mainHeader = new Label("Transactions");
+        mainHeader.setFont(new Font(30));
+        layout.getChildren().add(mainHeader);
+
+        //create the table of orders
+        TableView<Order> orderTable = new TableView<>();
+        ObservableList<Order> orderData = FXCollections.observableArrayList(TransactionLog.getOrderList());
+        orderTable.setItems(orderData);
+
+        TableColumn<Order, String> IDCol= new TableColumn<>("#");
+        IDCol.setCellValueFactory(d ->
+                new SimpleStringProperty(Integer.toString(d.getValue().getOrderId()))
+        );
+        TableColumn<Order, String> buyerCol = new TableColumn<>("Buyer");
+        buyerCol.setCellValueFactory(d ->
+                new SimpleStringProperty(d.getValue().getBuyer().getAsuId())
+        );
+        TableColumn<Order, String> timeCol = new TableColumn<>("Timestamp");
+        timeCol.setCellValueFactory(d ->
+                new SimpleStringProperty(d.getValue().getTimestamp().toString())
+        );
+        TableColumn<Order, String> numCol = new TableColumn<>("Total books");
+        numCol.setCellValueFactory(d ->
+                new SimpleStringProperty(Integer.toString(d.getValue().getBooks().size()))
+        );
+        TableColumn<Order, String> priceCol = new TableColumn<>("Total price");
+        priceCol.setCellValueFactory(d ->
+                new SimpleStringProperty(String.format("%.2f", d.getValue().getTotalPrice()))
+        );
+
+        orderTable.getColumns().addAll(IDCol, buyerCol, timeCol, numCol, priceCol);
+        layout.getChildren().add(orderTable);
+
 
         transactionsTab.setContent(layout);
         return transactionsTab;
     }
 
+    //-------------------------------------------
+    // OTHER UI FEATURES
+    //-------------------------------------------
+    private Label createHeader(String str){
+        Label header = new Label(str);
+        header.setFont(new Font(18));
+        return header;
+    }
 
+    private VBox createValueDisplay(String val, String desc){
+        Label value = new Label(val);
+        value.setFont(new Font(24));
+        value.setTextFill(Paint.valueOf("MAROON"));
+        Label description = new Label(desc);
+
+        VBox layout = new VBox(value, description);
+        layout.setMinWidth((width - 140) / 4);
+        return layout;
+    }
+
+    private VBox createDisplayRow(String headerStr, VBox box1, VBox box2, VBox box3, VBox box4){
+        Label header = createHeader(headerStr);
+
+        HBox displayRow = new HBox(box1, box2, box3, box4);
+        displayRow.setSpacing(14);
+
+        return new VBox(header, displayRow);
+    }
 
     public static void main(String[] args){
         launch(args);
