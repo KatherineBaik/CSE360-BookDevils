@@ -72,7 +72,6 @@ public class AnalysisTool {
         return getTotalRevenue() / getTotalOrders();
     }
 
-    //TEST AND CHECK!!!!
     /** Finds the best-selling book. */
     public static Book getBestSellingBook(){
         Book bestSelling = null;
@@ -116,16 +115,14 @@ public class AnalysisTool {
         return bestSelling;
     }
 
-    //TEST AND CHECK!!!!
     /** Calculate the best-selling book category */
-    public static Book.Category getBestSellingCategory(){
+    public static Book.Category getHighestGrossingCategory(){
         Book.Category bestSelling = null;
-        int bestSellingTotal  = 0;
 
         //holds the total amounts of each book category
-        Map<Book.Category, Integer> totals = new HashMap<>();
+        Map<Book.Category, Double> totals = new HashMap<>();
         for(Book.Category category : Book.Category.values()){
-            totals.put(category, 0);
+            totals.put(category, 0.0);
         }
 
         //go through all orders in TransactionLog
@@ -136,10 +133,9 @@ public class AnalysisTool {
             //loop through the booklist of each order
             bookList = o.getBooks();
             for(Book b : bookList){
-                int value = totals.get(b.getCategory()) + 1;
+                double value = totals.get(b.getCategory()) + b.getSellingPrice();
 
-                if(value > bestSellingTotal){
-                    value = bestSellingTotal;
+                if(bestSelling == null || value > totals.get(bestSelling)){
                     bestSelling = b.getCategory();
                 }
 
@@ -156,6 +152,12 @@ public class AnalysisTool {
 
     /** Get the total number of books in BookListingManager */
     public static int getTotalBooks(){
+        //TODO
+        return 0;
+    }
+
+    /** Get the number of books that are sold/available in BookListingManager */
+    public static int getTotalBooks(boolean sold){
         //TODO
         return 0;
     }

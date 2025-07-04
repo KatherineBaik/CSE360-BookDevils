@@ -1,40 +1,25 @@
-package com.example.demo1.BuyerView;
+package BuyerView;
 
-import java.util.ArrayList;
+import Data.Book;
+import Data.Order;
+import Data.OrderStore;
+import SellerView.BookListingManager;
+
+import java.util.List;
 
 public class CheckoutHandler {
 
-    public Order processCheckout(Cart cart) {
-        ArrayList<Book> books = cart.getBooks();
+    public Order process(Cart cart) {
+        if (cart.getBooks().isEmpty()) return null;
 
-        if (books.size() == 0) {
-            return null;
-        }
-
-        String orderId = "ORD" + System.currentTimeMillis();
-        Order order = new Order(orderId, cart.getBuyer(), books, cart.getTotalPrice());
-
-        for (int i = 0; i < books.size(); i++) {
-            Book book = books.get(i);
-            int stock = book.getStockQuantity();
-            book.setStockQuantity(stock - 1);
-        }
-
-        cart.clearCart();
+        // create immutable order & mark items sold
+        Order order = new Order(cart.getBuyer(), List.copyOf(cart.getBooks()));
+    cart.getBooks().forEach(b -> {
+        b.markAsSold();
+        BookListingManager.getInstance().markSold(b.getId());
+    });
+        cart.clear();
+        OrderStore.add(order); 
         return order;
-    }
-
-    public boolean checkCard(String cardNumber) {
-        if (cardNumber.length() == 16) {
-            return true;
-        }
-        return false;
-    }
-
-    public boolean checkCVV(String cvv) {
-        if (cvv.length() == 3) {
-            return true;
-        }
-        return false;
     }
 }

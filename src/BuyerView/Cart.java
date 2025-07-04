@@ -1,63 +1,26 @@
-package com.example.demo1.BuyerView;
+package BuyerView;
 
+import Data.Book;
+import Data.User;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Cart {
-    private ArrayList<Book> books;
-    private User buyer;
-    private double totalPrice;
+    private final User buyer;
+    private final List<Book> books = new ArrayList<>();
 
-    public Cart(User buyer) {
-        this.buyer = buyer;
-        this.books = new ArrayList<Book>();
-        this.totalPrice = 0;
-    }
+    public Cart(User buyer) { this.buyer = buyer; }
 
-    public boolean addBook(Book book) {
-        int count = 0;
-        for (int i = 0; i < books.size(); i++) {
-            if (books.get(i).equals(book)) {
-                count++;
-            }
-        }
-
-        if (count >= book.getStockQuantity()) {
-            return false;
-        }
-
-        books.add(book);
-        totalPrice = totalPrice + book.getSellingPrice();
+    public boolean add(Book b) {
+        if (b.isSold()) return false;       // already gone
+        books.add(b);
         return true;
     }
 
-    public void removeBook(Book book) {
-        for (int i = 0; i < books.size(); i++) {
-            if (books.get(i).equals(book)) {
-                totalPrice = totalPrice - book.getSellingPrice();
-                books.remove(i);
-                break;
-            }
-        }
-    }
+    public void remove(Book b)  { books.remove(b); }
+    public void clear()         { books.clear();   }
 
-    public void clearCart() {
-        books.clear();
-        totalPrice = 0;
-    }
-
-    public ArrayList<Book> getBooks() {
-        return books;
-    }
-
-    public double getTotalPrice() {
-        return totalPrice;
-    }
-
-    public User getBuyer() {
-        return buyer;
-    }
-
-    public int getItemCount() {
-        return books.size();
-    }
+    public List<Book> getBooks()   { return books; }
+    public User       getBuyer()   { return buyer; }
+    public double     getTotal()   { return books.stream().mapToDouble(Book::getSellingPrice).sum(); }
 }

@@ -1,54 +1,56 @@
 package Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+/** Immutable record of a completed checkout. */
 public class Order {
-    private static int orderCounter = 1000; // auto-increment order ID
-    private int orderID;
-    private User buyer;
-    private List<Book> books;
-    private double totalPrice;
+
+    /* ------------------------------------------------------------ */
+    private static int nextId = 1;
+
+    private int                   orderId;
+    private final User            buyer;
+    private final List<Book>      books;
+    private final double          totalPrice;
+    private LocalDateTime         timestamp;
+    /* ------------------------------------------------------------ */
 
     public Order(User buyer, List<Book> books) {
-        this.orderID = orderCounter++;
-        this.buyer = buyer;
-        this.books = books;
-        this.totalPrice = calculateTotalPrice();
+        this.orderId   = nextId++;
+        this.buyer     = buyer;
+        this.books     = List.copyOf(books);
+        this.totalPrice = books.stream()
+                               .mapToDouble(Book::getSellingPrice)
+                               .sum();
+        this.timestamp = LocalDateTime.now();
     }
 
-    private double calculateTotalPrice() {
-        double total = 0.0;
-        for (Book b : books) {
-            total += b.getSellingPrice();
-        }
-        return total;
+    /* ---------------- getters ---------------- */
+    public int            getOrderId()  { return orderId; }
+    public User           getBuyer()    { return buyer; }
+    public List<Book>     getBooks()    { return books; }
+    public double         getTotalPrice(){ return totalPrice; }
+    public LocalDateTime  getTimestamp(){ return timestamp; }
+    public void setOrderId(int id) {          // needed by OrderStore.load()
+    // reflection-free tweak – use field via reflection or make orderId non-final
+        this.orderId = id;
+    }
+    public void setTimestamp(LocalDateTime ts) {
+        this.timestamp = ts;
     }
 
-    // Getters
-    public int getOrderID() {
-        return orderID;
+    /* ---------------- convenience ------------ */
+    @Override public String toString() {
+        return "Order#" + orderId + " – " + books.size() +
+               " item(s) – $" + "%.2f".formatted(totalPrice);
     }
 
-    public User getBuyer() {
-        return buyer;
-    }
-
-    public List<Book> getBooks() {
-        return books;
-    }
-
-    public double getTotalPrice() {
-        return totalPrice;
-    }
-
-    // Optional: for printing order info
-    public void printOrderDetails() {
-        System.out.println("Order ID: " + orderID);
-        //System.out.println("Buyer: " + buyer.getUsername());
-        System.out.println("Books:");
-        for (Book b : books) {
-            System.out.println("- " + b.getTitle() + " by " + b.getAuthor() + " | $" + b.getSellingPrice());
-        }
-        System.out.println("Total Price: $" + totalPrice);
+    @Override public boolean equals(Object obj){
+        if(!(obj instanceof Order other)) return false;
+        return (buyer.equals(other.buyer) &&
+                books.equals(other.books) &&
+                totalPrice == other.totalPrice &&
+                timestamp.equals(other.timestamp));
     }
 }
