@@ -19,6 +19,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,13 +98,23 @@ public class BuyerPage extends Application {
      *  Top bar
      * ------------------------------------------------------------------ */
     private HBox buildTopBar(Stage owner) {
-        Label logo = new Label("BOOK DEVILS");
-        logo.setTextFill(Color.WHITE);
-        logo.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        // --- Logo --- Added logo-esha
+        ImageView logoImg = new ImageView(new Image(getClass().getResource("/LoginPage/logo(2).png").toExternalForm()));
+        logoImg.setFitHeight(70);
+        logoImg.setPreserveRatio(true);
 
+        Label appName = new Label("Book Devils");
+        appName.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        appName.setTextFill(Color.WHITE);
+
+        HBox left = new HBox(10, logoImg, appName);
+        left.setAlignment(Pos.CENTER_LEFT);
+
+        // --- Spacer ---
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
+        // --- Buttons ---
         cartBtn = new Button();
         cartBtn.setOnAction(e -> openCart());
         updateCartLabel();
@@ -114,21 +126,24 @@ public class BuyerPage extends Application {
         Button logout = new Button("LOGOUT");
         logout.setOnAction(e -> {
             try {
-                // 1) open a new login window
                 new LoginPage().start(new Stage());
             } catch (Exception ex) {
-                ex.printStackTrace();            // (optional) show an alert instead
+                ex.printStackTrace();
             }
-            // 2) close the current dashboard window
-            owner.close();                       // 'owner' is the Stage passed to this UI
+            owner.close();
         });
 
-        HBox bar = new HBox(10, logo, spacer, cartBtn, wishlistBtn, logout);
-        bar.setPadding(new Insets(8));
+        for (Button btn : List.of(cartBtn, wishlistBtn, logout)) {
+            btn.setStyle("-fx-background-color: white; -fx-text-fill: #750029; -fx-font-weight: bold;");
+        }
+
+        HBox bar = new HBox(20, left, spacer, cartBtn, wishlistBtn, logout);
+        bar.setPadding(new Insets(10));
         bar.setAlignment(Pos.CENTER_LEFT);
-        bar.setStyle("-fx-background-color:#8C1D40;");
+        bar.setStyle("-fx-background-color: #750029;");
         return bar;
     }
+
 
     /* ------------------------------------------------------------------
      *  Filter panel
@@ -221,36 +236,54 @@ public class BuyerPage extends Application {
 
     /* ------------------------------------------------------------------
      *  Details dialog
+     * Made some UI changes- esha
      * ------------------------------------------------------------------ */
     private void showDetails(Book book) {
         Stage dlg = new Stage();
         dlg.initModality(Modality.APPLICATION_MODAL);
-        dlg.setTitle(book.getTitle());
+        dlg.setTitle("Book Details");
 
+        // --- Styled labels ---
         Label title = new Label(book.getTitle());
-        title.setFont(Font.font(18));
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        title.setTextFill(Color.web("#750029"));
 
         Label author = new Label("by " + book.getAuthor());
-        Label price  = new Label("$" + String.format("%.2f", book.getSellingPrice()));
+        author.setFont(Font.font("Arial", 14));
+        author.setTextFill(Color.web("#444"));
 
+        Label price = new Label("$" + String.format("%.2f", book.getSellingPrice()));
+        price.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        price.setTextFill(Color.web("#750029"));
+
+        // --- Styled buttons ---
         Button add = new Button("Add to cart");
+        add.setStyle("-fx-background-color: #750029; -fx-text-fill: white; -fx-font-weight: bold;");
         add.setOnAction(e -> {
             if (cart.add(book)) updateCartLabel();
             dlg.close();
         });
 
         Button wish = new Button("Wishlist");
+        wish.setStyle("-fx-background-color: white; -fx-border-color: #750029; -fx-text-fill: #750029; -fx-font-weight: bold;");
         wish.setOnAction(e -> {
             if (!wishlist.contains(book)) wishlist.add(book);
             updateWishlistLabel();
             dlg.close();
         });
 
-        VBox box = new VBox(8, title, author, price, new HBox(10, add, wish));
-        box.setPadding(new Insets(16));
-        dlg.setScene(new Scene(box));
+        HBox buttonBox = new HBox(10, add, wish);
+        buttonBox.setAlignment(Pos.CENTER_LEFT);
+
+        VBox box = new VBox(12, title, author, price, buttonBox);
+        box.setPadding(new Insets(20));
+        box.setStyle("-fx-background-color: white;");
+
+        Scene scene = new Scene(box, 300, 200);
+        dlg.setScene(scene);
         dlg.showAndWait();
     }
+
 
     /* ------------------------------------------------------------------
      *  Cart & Wishlist
