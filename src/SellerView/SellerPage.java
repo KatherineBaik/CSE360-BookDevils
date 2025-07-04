@@ -178,9 +178,9 @@ public class SellerPage extends Application {
             return;
         }
 
-        // ***ADDED***: Auto-calculate selling price (20% markup)
-        double cost = book.getPrice();
-        book.setPrice(Math.round(cost * 1.2 * 100.0) / 100.0);
+        // ***CHANGED***: use getOriginalPrice() and setSellingPrice()
+        double cost = book.getOriginalPrice();
+        book.setSellingPrice(Math.round(cost * 1.2 * 100.0) / 100.0);
 
         BookListingManager.createListing(book);
         refreshTable();
@@ -216,9 +216,9 @@ public class SellerPage extends Application {
             && !book.getTitle().trim().isEmpty()
             && book.getAuthor() != null
             && !book.getAuthor().trim().isEmpty()
-            && book.getPrice()  >  0;
+            // ***CHANGED***: use getOriginalPrice() for validation
+            && book.getOriginalPrice() > 0;
     }
-
     // ***ADDED***: Edit dialog for existing listings
     private void showEditBookDialog(Book book) {
         TextInputDialog dlg =
@@ -231,10 +231,10 @@ public class SellerPage extends Application {
             // TODO: repeat for author, price, etc.
 
             // Re-apply markup if cost changed
-            double cost = book.getPrice();
-            book.setPrice(
-              Math.round(cost * 1.2 * 100.0) / 100.0
-            );
+            // ***CHANGED***: use getOriginalPrice() / setSellingPrice()
+            double cost = book.getOriginalPrice();
+            book.setSellingPrice(Math.round(cost * 1.2 * 100.0) / 100.0);
+
 
             BookListingManager.updateListing(
               book.getId(), book);
