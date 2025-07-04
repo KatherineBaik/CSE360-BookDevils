@@ -99,7 +99,31 @@ public class SellerPage extends Application {
         TableColumn<Book, Number> priceCol = new TableColumn<>("Price");
         priceCol.setCellValueFactory(d -> d.getValue().priceProperty());
 
-        table.getColumns().addAll(titleCol, authorCol, priceCol);
+        // ***ADDED***: Actions column for Edit/Delete
+        TableColumn<Book, Void> actionCol = new TableColumn<>("Actions");
+        actionCol.setCellFactory(col -> new TableCell<>() {
+            private final Button editBtn   = new Button("Edit");
+            private final Button deleteBtn = new Button("Delete");
+            {
+                editBtn.setOnAction(e -> {
+                    Book b = getTableView().getItems().get(getIndex());
+                    showEditBookDialog(b);
+                });
+                deleteBtn.setOnAction(e -> {
+                    Book b = getTableView().getItems().get(getIndex());
+                    BookListingManager.deleteListing(b.getId());
+                    refreshTable();
+                });
+            }
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : new HBox(5, editBtn, deleteBtn));
+            }
+        });
+
+        // ***CHANGED***: include actionCol in the table setup
+        table.getColumns().setAll(titleCol, authorCol, priceCol, actionCol);
         refreshTable();
 
         // ---------------- Footer ----------------
@@ -137,9 +161,25 @@ public class SellerPage extends Application {
 
     /** Adds a new listing on behalf of the seller. */
     public void listBook(Book book) {
+        // ***ADDED***: Validate user input
+        if (!validateBook(book)) {
+            Alert alert = new Alert(
+                Alert.AlertType.ERROR,
+                "Please fill in Title, Author and Price (> 0)."
+            );
+            alert.showAndWait();
+            return;
+        }
+
+        // ***ADDED***: Auto-calculate selling price (20% markup)
+        double cost = book.getPrice();
+        book.setPrice(Math.round(cost * 1.2 * 100.0) / 100.0);
+
         BookListingManager.createListing(book);
         refreshTable();
     }
+
+
 
     /* ------------------------------------------------------------------
      *  Helpers
@@ -162,5 +202,30 @@ public class SellerPage extends Application {
             seller.getAsuId()            // assumes Book has a seller-id field
         );
         listBook(demo);
+    }
+  // ***ADDED***: Validate essential Book fields before listing/editing
+    private boolean validateBook(Book book) {
+        return book.getTitle()  != null && !book.getTitle().trim().isEmpty()
+            && book.getAuthor() != null && !book.getAuthor().trim().isEmpty()
+            && book.getPrice()  >  0;
+    }
+
+    // ***ADDED***: Show a dialog to edit an existing Book, then persist
+    private void showEditBookDialog(Book book) {
+        TextInputDialog dlg = new TextInputDialog(book.getTitle());
+        dlg.setTitle("Edit Book");
+        dlg.setHeaderText("Update Title:");
+        dlg.setContentText("Title:");
+        dlg.showAndWait().ifPresent(newTitle -> {
+            book.setTitle(newTitle);
+            // TODO: repeat for author, price, etc.
+
+            // Re-apply markup if you changed cost
+            double cost = book.getPrice();
+            book.setPrice(Math.round(cost * 1.2 * 100.0) / 100.0);
+
+            BookListingManager.updateListing(book.getId(), book);
+            refreshTable();
+        });
     }
 }
