@@ -1,6 +1,1 @@
 # id,title,author,year,category,condition,origPrice,sellPrice,sellerId,sold
-501b712a-6b46-465b-9f34-0d47a5bf009a,Untitled Draft,Anonymous,2025,OTHER,NEW,9.99,9.99,seller1,true
-835a3477-3d96-47f9-afab-2e141555856e,Untitled Draft,Anonymous,2025,OTHER,NEW,9.99,9.99,seller1,true
-a5b79759-4be4-48d5-a3b5-7ebcc60eb1c3,Untitled Draft,Anonymous,2025,OTHER,NEW,9.99,9.99,seller1,true
-f317df52-ca4c-45f4-b61c-3a83819db48a,Untitled Draft,Anonymous,2025,OTHER,NEW,9.99,9.99,seller1,true
-6152d5b3-7dbf-4b69-a907-efa1cbbf8af0,Untitled Draft,Anonymous,2025,OTHER,NEW,9.99,9.99,seller1,true
