@@ -5,6 +5,7 @@ import Data.Order;
 import Data.User;
 import Data.UserStore;
 
+import SellerView.BookListingManager;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -87,14 +88,11 @@ class AnalysisToolTest {
     }
 
     @Test
-    void getAverageRevenue() {
+    void get() {
         TransactionLog.clear();
         addTestOrders();
 
-        double total = (10.99 * 3) + (5.99 * 5);
-        double avg = total / 4;
-
-        assertEquals(avg, AnalysisTool.getAverageRevenue());
+        assertEquals("123", AnalysisTool.getHighestGrossingSeller());
     }
 
     @Test
@@ -122,20 +120,36 @@ class AnalysisToolTest {
     //---------------
     @Test
     void getTotalBooks() {
-        //TODO
-        fail("Not implemented yet");
+        BookListingManager.clear();
+        addTestBooks();
+
+        assertEquals(5, AnalysisTool.getTotalBooks());
+
+        BookListingManager.clear();
     }
 
     @Test
     void getTotalBooksAvailable(){
-        //TODO
-        fail("Not implemented yet");
+        BookListingManager.clear();
+        addTestBooks();
+
+        assertEquals(2, AnalysisTool.getTotalBooks(true));
+        assertEquals(3, AnalysisTool.getTotalBooks(false));
+
+        BookListingManager.clear();
     }
 
     @Test
     void getAvgBookPrice() {
-        //TODO
-        fail("Not implemented yet");
+        double total = 10.99 + (5.99 * 3) + 6.99;
+        double avg = total / 5;
+
+        BookListingManager.clear();
+        addTestBooks();
+
+        assertEquals(avg, AnalysisTool.getAvgBookPrice());
+
+        BookListingManager.clear();
     }
 
     //----------------
@@ -198,5 +212,39 @@ class AnalysisToolTest {
         books.removeFirst();
         books.removeLast();
         TransactionLog.add(new Order(u3, books)); //5.99
+    }
+
+    /**
+     * 5 books, 2 sold
+     */
+    private void addTestBooks(){
+        Book b1 = new Book("book1", "author", 2000,
+                Book.Category.OTHER, Book.Condition.NEW,
+                10.99, "123");
+
+        Book b2 = new Book("book2", "author", 2000,
+                Book.Category.SCIENCE, Book.Condition.NEW,
+                5.99, "124");
+
+        Book b3 = new Book("book3", "author", 2000,
+                Book.Category.SCIENCE, Book.Condition.NEW,
+                6.99, "124");
+
+        Book b4 = new Book("book4", "author2", 2000,
+                Book.Category.SCIENCE, Book.Condition.NEW,
+                5.99, "125");
+
+        Book b5 = new Book("book5", "author2", 2000,
+                Book.Category.MATH, Book.Condition.NEW,
+                5.99, "126");
+
+        BookListingManager.createListing(b1);
+        BookListingManager.createListing(b2);
+        BookListingManager.createListing(b3);
+        BookListingManager.createListing(b4);
+        BookListingManager.createListing(b5);
+
+        BookListingManager.markSold("book2");
+        BookListingManager.markSold("book5");
     }
 }
