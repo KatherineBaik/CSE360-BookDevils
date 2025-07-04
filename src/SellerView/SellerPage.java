@@ -8,6 +8,7 @@ import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.TextInputDialog;   // ***ADDED***
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -23,7 +24,8 @@ import javafx.geometry.Pos;
 
 
 import java.util.List;
-
+import java.util.Optional;    // ***ADDED***
+import SellerView.BookListingManager;         // ***ADDED***
 /**
  * Minimal, functional Seller dashboard.
  * <p>
@@ -129,11 +131,16 @@ public class SellerPage extends Application {
         // ---------------- Footer ----------------
         Button listBtn = new Button("List New Book");
         listBtn.setStyle("-fx-background-color: #750029; -fx-text-fill: white; -fx-font-weight: bold;");
-        listBtn.setOnAction(e -> mockListBook());
+        // ***CHANGED***: now launches a real Add-Book dialog instead of mockListBook()
+        listBtn.setOnAction(e -> {
+            Book newBook = showAddBookDialog();
+            if (newBook != null) listBook(newBook);
+        });
 
         HBox footer = new HBox(listBtn);
         footer.setPadding(new Insets(10));
         footer.setAlignment(Pos.CENTER_LEFT);
+
 
         // ---------------- Layout ----------------
         BorderPane root = new BorderPane();
@@ -203,16 +210,19 @@ public class SellerPage extends Application {
         );
         listBook(demo);
     }
-  // ***ADDED***: Validate essential Book fields before listing/editing
+ // ***ADDED***: Basic input validation
     private boolean validateBook(Book book) {
-        return book.getTitle()  != null && !book.getTitle().trim().isEmpty()
-            && book.getAuthor() != null && !book.getAuthor().trim().isEmpty()
+        return book.getTitle()  != null
+            && !book.getTitle().trim().isEmpty()
+            && book.getAuthor() != null
+            && !book.getAuthor().trim().isEmpty()
             && book.getPrice()  >  0;
     }
 
-    // ***ADDED***: Show a dialog to edit an existing Book, then persist
+    // ***ADDED***: Edit dialog for existing listings
     private void showEditBookDialog(Book book) {
-        TextInputDialog dlg = new TextInputDialog(book.getTitle());
+        TextInputDialog dlg =
+          new TextInputDialog(book.getTitle());
         dlg.setTitle("Edit Book");
         dlg.setHeaderText("Update Title:");
         dlg.setContentText("Title:");
@@ -220,12 +230,70 @@ public class SellerPage extends Application {
             book.setTitle(newTitle);
             // TODO: repeat for author, price, etc.
 
-            // Re-apply markup if you changed cost
+            // Re-apply markup if cost changed
             double cost = book.getPrice();
-            book.setPrice(Math.round(cost * 1.2 * 100.0) / 100.0);
+            book.setPrice(
+              Math.round(cost * 1.2 * 100.0) / 100.0
+            );
 
-            BookListingManager.updateListing(book.getId(), book);
+            BookListingManager.updateListing(
+              book.getId(), book);
             refreshTable();
         });
+    }
+
+    // ***ADDED***: Dialog to collect real book details
+    private Book showAddBookDialog() {
+        // 1) Title
+        TextInputDialog titleDlg =
+          new TextInputDialog();
+        titleDlg.setTitle("New Book");
+        titleDlg.setHeaderText("Enter Title:");
+        Optional<String> ot = titleDlg.showAndWait();
+        if (ot.isEmpty()
+         || ot.get().trim().isEmpty()) return null;
+        String title = ot.get().trim();
+
+        // 2) Author
+        TextInputDialog authDlg =
+          new TextInputDialog();
+        authDlg.setTitle("New Book");
+        authDlg.setHeaderText("Enter Author:");
+        Optional<String> oa = authDlg.showAndWait();
+        if (oa.isEmpty()
+         || oa.get().trim().isEmpty()) return null;
+        String author = oa.get().trim();
+
+        // 3) Cost Price
+        TextInputDialog priceDlg =
+          new TextInputDialog();
+        priceDlg.setTitle("New Book");
+        priceDlg.setHeaderText("Enter Cost Price:");
+        priceDlg.setContentText("e.g. 9.99");
+        Optional<String> op = priceDlg.showAndWait();
+        double cost;
+        try {
+            cost = Double.parseDouble(
+              op.orElse("").trim()
+            );
+            if (cost <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException ex) {
+            new Alert(
+              Alert.AlertType.ERROR,
+              "Invalid price entered."
+            ).showAndWait();
+            return null;
+        }
+
+        // 4) Build and return the Book
+        return new Book(
+            title,
+            author,
+            2025,
+            Book.Category.OTHER,
+            Book.Condition.NEW,
+            cost,
+            seller.getAsuId()
+        );
     }
 }
