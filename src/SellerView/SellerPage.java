@@ -26,7 +26,6 @@ public class SellerPage extends Application {
      *  State
      * ------------------------------------------------------------------ */
     private final User seller;                       // logged-in user
-    private final BookListingManager manager;        // shared singleton
     private TableView<Book> table;                   // listing view
 
     /* ------------------------------------------------------------------
@@ -36,13 +35,11 @@ public class SellerPage extends Application {
     /** Called by LoginPage when the SELLER logs in. */
     public SellerPage(User seller) {
         this.seller   = seller;
-        this.manager  = BookListingManager.getInstance();   // <-- change if you use a different accessor
     }
 
     // no-arg constructor required by JavaFX launcher, never used here
     public SellerPage() {
         this.seller  = null;
-        this.manager = BookListingManager.getInstance();
     }
 
     /* ------------------------------------------------------------------
@@ -83,16 +80,17 @@ public class SellerPage extends Application {
      *  Controller-style API (unchanged from your original file)
      * ------------------------------------------------------------------ */
 
-    /** Returns all books currently listed by *this* seller. */
+    /** Returns all books currently listed by *this* seller.
+     *  NOTE: Only shows books that haven't been sold. */
     public List<Book> viewListings() {
-        return manager.getAllListings().stream()
+        return BookListingManager.getAllListingsNotSold().stream()
                       .filter(b -> b.getSellerId().equals(seller.getAsuId()))
                       .toList();
     }
 
     /** Adds a new listing on behalf of the seller. */
     public void listBook(Book book) {
-        manager.createListing(book);
+        BookListingManager.createListing(book);
         refreshTable();
     }
 

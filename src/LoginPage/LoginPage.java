@@ -162,7 +162,7 @@ public class LoginPage extends Application {
             switch (user.getRole()) {
                 case BUYER -> {
                     // pull the current inventory once and pass it to the UI
-                    var listings = BookListingManager.getInstance().getAllListings();
+                    var listings = BookListingManager.getAllListingsNotSold();
                     BuyerPage buyerPage = new BuyerPage(user, new ArrayList<>(listings));
                     buyerPage.start(new Stage());
                 }

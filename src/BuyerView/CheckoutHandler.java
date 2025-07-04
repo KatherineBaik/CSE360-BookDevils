@@ -16,7 +16,7 @@ public class CheckoutHandler {
         Order order = new Order(cart.getBuyer(), List.copyOf(cart.getBooks()));
     cart.getBooks().forEach(b -> {
         b.markAsSold();
-        BookListingManager.getInstance().markSold(b.getId());
+        BookListingManager.markSold(b.getId());
     });
         cart.clear();
         OrderStore.add(order); 
