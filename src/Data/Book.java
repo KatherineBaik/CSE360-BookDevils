@@ -77,7 +77,6 @@ public class Book {
 
     public void markAsSold()           { sold.set(true);  }
     public boolean isSold()            { return sold.get(); }
-    public BooleanProperty soldProperty() { return sold; }
 
     public String getBookSummary() {
         return "%s by %s (%d) – $%.2f".formatted(
