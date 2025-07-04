@@ -2,6 +2,7 @@ package SellerView;
 
 import Data.Book;
 import Data.User;
+import LoginPage.LoginPage;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -10,6 +11,16 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.layout.Region;
+import javafx.scene.paint.Paint;
+import javafx.scene.layout.Priority;
+import javafx.geometry.Pos;
+
+
 
 import java.util.List;
 
@@ -47,34 +58,70 @@ public class SellerPage extends Application {
      * ------------------------------------------------------------------ */
     @Override
     public void start(Stage stage) {
-        /* ---------- simple table ---------- */
+        // ---------------- Top Bar ----------------
+        ImageView logo = new ImageView(new Image(getClass().getResource("/LoginPage/logo(2).png").toExternalForm()));
+        logo.setFitHeight(70);
+        logo.setPreserveRatio(true);
+
+        Label title = new Label("Book Devils");
+        title.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        title.setTextFill(Paint.valueOf("white"));
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Button logoutButton = new Button("LOGOUT");
+        logoutButton.setStyle("-fx-background-color: white; -fx-text-fill: #750029; -fx-font-weight: bold;");
+        logoutButton.setOnAction(e -> {
+            try {
+                new LoginPage().start(new Stage());
+                stage.close();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+
+        HBox topBar = new HBox(10, logo, title, spacer, logoutButton);
+        topBar.setPadding(new Insets(10));
+        topBar.setStyle("-fx-background-color: #750029;");
+        topBar.setAlignment(Pos.CENTER_LEFT);
+
+        // ---------------- Table ----------------
         table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        TableColumn<Book,String> titleCol  = new TableColumn<>("Title");
+        TableColumn<Book, String> titleCol = new TableColumn<>("Title");
         titleCol.setCellValueFactory(d -> d.getValue().titleProperty());
-        TableColumn<Book,String> authorCol = new TableColumn<>("Author");
+
+        TableColumn<Book, String> authorCol = new TableColumn<>("Author");
         authorCol.setCellValueFactory(d -> d.getValue().authorProperty());
-        TableColumn<Book,Number> priceCol  = new TableColumn<>("Price");
+
+        TableColumn<Book, Number> priceCol = new TableColumn<>("Price");
         priceCol.setCellValueFactory(d -> d.getValue().priceProperty());
 
         table.getColumns().addAll(titleCol, authorCol, priceCol);
-        refreshTable();                       // load current listings
+        refreshTable();
 
-        /* ---------- quick “List Book” stub ---------- */
+        // ---------------- Footer ----------------
         Button listBtn = new Button("List New Book");
-        listBtn.setOnAction(e -> mockListBook());     // demo only
+        listBtn.setStyle("-fx-background-color: #750029; -fx-text-fill: white; -fx-font-weight: bold;");
+        listBtn.setOnAction(e -> mockListBook());
 
         HBox footer = new HBox(listBtn);
         footer.setPadding(new Insets(10));
+        footer.setAlignment(Pos.CENTER_LEFT);
 
-        BorderPane root = new BorderPane(table);
+        // ---------------- Layout ----------------
+        BorderPane root = new BorderPane();
+        root.setTop(topBar);
+        root.setCenter(table);
         root.setBottom(footer);
 
         stage.setTitle("Book Devils – Seller Dashboard");
-        stage.setScene(new Scene(root, 600, 400));
+        stage.setScene(new Scene(root, 700, 500));
         stage.show();
     }
+
 
     /* ------------------------------------------------------------------
      *  Controller-style API (unchanged from your original file)
