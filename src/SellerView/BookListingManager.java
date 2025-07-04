@@ -1,97 +1,114 @@
 package SellerView;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import Data.Book;
 import Data.BookStore;
 
-import java.io.IOException;
-import java.util.*;
-
 /**
- * Singleton that mediates between Seller/Buyer UIs and BookStore.csv
+ * BookListingManager is responsible for managing all books listed by a seller.
+ * This class uses static methods to handle persistence and CRUD operations.
  */
 public class BookListingManager {
+    private static List<Book> listings = new ArrayList<>();
 
-    /* ------------ singleton boiler-plate ------------ */
-    private static final BookListingManager INSTANCE = new BookListingManager();
-    public static BookListingManager getInstance() { return INSTANCE; }
+    // Load existing listings on class load
+    static {
+        loadFromFile();
+    }
 
-    /* ------------ in-memory state ------------ */
-    /** key = bookId (UUID), value = Book object */
-    private final Map<String, Book> listings = new LinkedHashMap<>();
+    public static void createListing(Book book) {
+        listings.add(book);
+        saveToFile();
+    }
 
-    /** private ctor loads books from CSV once at program start */
-    private BookListingManager() {
-        try {
-            listings.putAll(BookStore.load());        // Map<String,Book>
-        } catch (IOException ex) {
-            ex.printStackTrace();
+    public static boolean updateListing(String id, Book updatedBook) {
+        for (int i = 0; i < listings.size(); i++) {
+            Book b = listings.get(i);
+            if (b.getId().equals(id)) {
+                listings.set(i, updatedBook);
+                saveToFile();
+                return true;
+            }
         }
+        System.out.println("[WARN] Book not found for update: " + id);
+        return false;
     }
 
-    /* =================================================
-     *  Public API used by SellerPage, BuyerPage, Checkout
-     * ================================================= */
-
-    /** All books that are NOT sold (for Buyer view) */
-    public Collection<Book> getAllListings() {
-        return listings.values().stream()
-                       .filter(b -> !b.isSold())
-                       .toList();
-    }
-
-    /** Seller adds a new listing */
-    public void createListing(Book book) {
-        if (book.getId() == null || book.getId().isBlank())
-            book.setId(UUID.randomUUID().toString());
-
-        listings.put(book.getId(), book);
-        persist();
+    public static boolean deleteListing(String id) {
+        for (Book b : listings) {
+            if (b.getId().equals(id)) {
+                listings.remove(b);
+                saveToFile();
+                return true;
+            }
+        }
+        System.out.println("[WARN] Book not found for deletion: " + id);
+        return false;
     }
 
     /** Called by CheckoutHandler after a successful purchase */
-    public void markSold(String bookId) {
-        Book b = listings.get(bookId);
-        if (b != null && !b.isSold()) {
-            b.markAsSold();
-            persist();
+    public static void markSold(String id) {
+        for(Book b : listings){
+            if (b != null && b.getId().equals(id)) {
+                b.markAsSold();
+                saveToFile();
+            }
         }
     }
 
-    /** Seller removes a listing before it’s sold */
-    public boolean removeListing(String bookId) {
-        Book removed = listings.remove(bookId);
-        if (removed != null) {
-            persist();
-            return true;
+    /** Returns all listings currently in BookListingManager */
+    public static List<Book> getAllListings() {
+        return new ArrayList<>(listings);
+    }
+
+    /** All books that are NOT sold (for Buyer view) */
+    public static List<Book> getAllListingsNotSold() {
+        return listings.stream()
+                .filter(b -> !b.isSold())
+                .toList();
+    }
+
+    public static int getTotalListed() {
+        return listings.size();
+    }
+
+    public static int getTotalSold() {
+        int soldCount = 0;
+        for (Book b : listings) {
+            if (b.isSold()) soldCount++;
         }
-        return false;
+        return soldCount;
     }
 
-    /** Find a listing by its title (case-insensitive) */
-    public Book findListingByTitle(String title) {
-        return listings.values().stream()
-                       .filter(b -> b.getTitle().equalsIgnoreCase(title))
-                       .findFirst()
-                       .orElse(null);
-    }
-
-    /** Replace the book with matching id by an updated copy */
-    public boolean editListing(String bookId, Book updated) {
-        if (listings.containsKey(bookId)) {
-            updated.setId(bookId);           // keep the same UUID
-            listings.put(bookId, updated);
-            persist();
-            return true;
-        }
-        return false;
-    }
-
-    /* ------------ helper ------------ */
-    private void persist() {
+    /**
+     * Loads existing listings from a CSV file.
+     * CSV columns: title,author,publishedYear,category,condition,originalPrice,sellingPrice,isSold
+     */
+    private static void loadFromFile() {
         try {
-            BookStore.save(listings.values());
+            listings.addAll(BookStore.load().values());
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    /**
+     * Persists current listings to a CSV file.
+     */
+    private static void saveToFile() {
+        try {
+            BookStore.save(listings);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /** FOR TESTING PURPOSES */
+    public static void clear(){
+        listings.clear();
+        saveToFile();
     }
 }
