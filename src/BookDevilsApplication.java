@@ -21,19 +21,16 @@ public class BookDevilsApplication extends Application {
             BookStore.load();    // touch-create books.txt
             OrderStore.load();   // touch-create orders.txt
 
-             // ***CHANGED***: use TransactionLog.loadData() instead of manual loop
-            TransactionLog.loadData();
+            //TODO: remove later once loadData() is working
+            for(Order o : OrderStore.getAll()){
+                TransactionLog.add(o);
+            }
+
         } catch (IOException ex) {
             ex.printStackTrace();      // or show an Alert dialog
         }
-
         launch(args);
-
-        // ***ADDED***: persist TransactionLog after application exits
-        try {
-            TransactionLog.saveData();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
     }
 }
+
+
