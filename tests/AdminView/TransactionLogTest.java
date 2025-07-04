@@ -12,37 +12,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TransactionLogTest {
-    @Test
-    void saveAndloadData() {
-        try{
-            //SETUP
-            TransactionLog.clear();
-            List<Order> orderList = new ArrayList<>();
-
-            User user1 = new User("1", "word", User.Role.BUYER);
-            User user2 = new User("2", "pass", User.Role.BUYER);
-            List<Book> books = createTestBookList();
-
-            orderList.add(new Order(user1, books));
-            orderList.add(new Order(user2, books));
-
-            for(Order o : orderList){
-                TransactionLog.add(o);
-            }
-
-            TransactionLog.saveData(); //THROWS ERROR here
-            TransactionLog.loadData();
-
-            //TEST
-            assertEquals(orderList.size(), TransactionLog.size()); //make sure size is the same
-
-            assertEquals(orderList, TransactionLog.getOrderList());
-        }
-        catch (Exception ex){
-            ex.printStackTrace();
-            fail();
-        }
-    }
 
     @Test
     void size() {

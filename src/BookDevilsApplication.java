@@ -1,6 +1,4 @@
-import AdminView.TransactionLog;
 import Data.BookStore;
-import Data.Order;
 import Data.OrderStore;
 import LoginPage.LoginPage;
 
@@ -20,11 +18,6 @@ public class BookDevilsApplication extends Application {
         try {
             BookStore.load();    // touch-create books.txt
             OrderStore.load();   // touch-create orders.txt
-
-            //TODO: remove later once loadData() is working
-            for(Order o : OrderStore.getAll()){
-                TransactionLog.add(o);
-            }
 
         } catch (IOException ex) {
             ex.printStackTrace();      // or show an Alert dialog

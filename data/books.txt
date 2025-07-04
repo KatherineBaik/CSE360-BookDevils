@@ -1,6 +1,8 @@
 # id,title,author,year,category,condition,origPrice,sellPrice,sellerId,sold
 fca286d8-bb93-412a-a40f-fd1c682a7f20,Untitled Draft,Anonymous,2025,OTHER,NEW,9.99,9.99,seller1,true
 20e44c2e-a759-4650-831a-03b024075bcd,Untitled Draft,Anonymous,2025,OTHER,NEW,9.99,9.99,seller1,true
-660d46b3-2f32-4373-af4f-e06cc3f7c6b7,Untitled Draft,Anonymous,2025,OTHER,NEW,9.99,9.99,seller1,false
-a3b80599-1601-4d84-aebe-1470529a47bc,Untitled Draft,Anonymous,2025,OTHER,NEW,9.99,9.99,seller1,false
+660d46b3-2f32-4373-af4f-e06cc3f7c6b7,Book,Anonymous,2025,OTHER,NEW,9.99,11.99,seller1,true
+a3b80599-1601-4d84-aebe-1470529a47bc,Untitled Draft,Anonymous,2025,OTHER,NEW,9.99,9.99,seller1,true
+d77d1789-d6dc-4fd2-ad4a-e42ede4d22aa,Untitled Draft,Anonymous,2025,OTHER,NEW,9.99,11.99,seller1,false
 aa183ad4-a380-4de4-851d-79f0b57608a3,Untitled Draft,Anonymous,2025,OTHER,NEW,9.99,9.99,seller1,false
+4beac783-e6bb-46fa-aa16-7549e6efdd73,This Is a Test,BOB,2025,OTHER,NEW,2.99,3.59,seller1,false

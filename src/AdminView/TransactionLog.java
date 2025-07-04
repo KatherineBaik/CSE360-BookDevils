@@ -1,6 +1,7 @@
 package AdminView;
 
 import Data.Order;
+import Data.OrderStore;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -31,43 +32,18 @@ public final class TransactionLog {
      * ------------------------------------------------------------------ */
     private static final List<Order> ORDER_LIST = new ArrayList<>();
 
-    /** Location on disc (relative to working dir) */
-    private static final Path FILE = Path.of("data", "transactions.ser");
-
     /* ------------------------------------------------------------------
      *  Persistence API
      * ------------------------------------------------------------------ */
 
     /**
-     * Loads previously saved orders from {@link #FILE} into memory.
+     * Loads previously saved orders from {@link OrderStore} into memory.
      * Call once when the application starts <b>before</b> anybody
      * queries the log.
      */
-    @SuppressWarnings("unchecked")
     public static void loadData() {
-        if (!Files.exists(FILE)) return;               // first run: nothing to load
-        try (ObjectInputStream in = new ObjectInputStream(Files.newInputStream(FILE))) {
-            ORDER_LIST.clear();
-            ORDER_LIST.addAll((List<Order>) in.readObject());
-        } catch (IOException | ClassNotFoundException ex) {
-            ex.printStackTrace();      // optional: log properly
-        }
-    }
-
-    /**
-     * Serialises the in‑memory list back to {@link #FILE}. Invoke this once
-     * on clean application shutdown or whenever you commit a batch of new
-     * orders.
-     */
-    public static void saveData() {
-        try {
-            Files.createDirectories(FILE.getParent());
-            try (ObjectOutputStream out = new ObjectOutputStream(Files.newOutputStream(FILE))) {
-                out.writeObject(ORDER_LIST);
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        ORDER_LIST.clear();
+        ORDER_LIST.addAll(OrderStore.getAll());
     }
 
     /* ------------------------------------------------------------------
