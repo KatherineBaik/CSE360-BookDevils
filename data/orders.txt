@@ -1,2 +1,2 @@
 # id,buyerId,sellerIds(';'),timestamp,totalPrice,bookIds(';')
-1,buyer1,seller1,2025-07-03T20:48:15.7319924,19.98,37c09e11-ee1e-4a9b-b62d-6f4ab6604327;d26b3237-a2bf-4d0c-9891-a78c89ddcfee
+1,buyer1,seller1,2025-07-03T21:35:51.6305017,19.98,fca286d8-bb93-412a-a40f-fd1c682a7f20;20e44c2e-a759-4650-831a-03b024075bcd
