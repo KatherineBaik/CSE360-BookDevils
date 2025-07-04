@@ -191,7 +191,7 @@ public class AdminPage extends Application {
 
         VBox salesInsightsRow = createDisplayRow("Sales Insights",
                 createValueDisplay(String.format("%.2f", revenue),"Total Revenue"),
-                createValueDisplay("n/a","Highest Grossing Seller"),
+                createValueDisplay(AnalysisTool.getHighestGrossingSeller(),"Highest Grossing Seller"),
                 createValueDisplay(bookTitle, "Top-Selling Book"),
                 createValueDisplay(bookCategory,"Highest-Grossing Category"));
 
