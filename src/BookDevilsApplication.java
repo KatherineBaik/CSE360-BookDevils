@@ -1,24 +1,34 @@
+import AdminView.TransactionLog;
+import Data.BookStore;
+import Data.Order;
+import Data.OrderStore;
+import LoginPage.LoginPage;
+
 import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class BookDevilsApplication extends Application {
     @Override
     public void start(Stage stage) {
-
-        Canvas canvas = new Canvas(200,200);
-        VBox mainLayout = new VBox(canvas);
-
-        Scene mainScene = new Scene(mainLayout);
-
-        stage.setScene(mainScene);
-        stage.setTitle("Test");
-        stage.show();
+        LoginPage loginPage = new LoginPage();
+        loginPage.start(stage);
     }
 
     public static void main(String[] args) {
-        launch();
+        try {
+            BookStore.load();    // touch-create books.txt
+            OrderStore.load();   // touch-create orders.txt
+
+            //TODO: remove later once loadData() is working
+            for(Order o : OrderStore.getAll()){
+                TransactionLog.add(o);
+            }
+
+        } catch (IOException ex) {
+            ex.printStackTrace();      // or show an Alert dialog
+        }
+        launch(args);
     }
 }
