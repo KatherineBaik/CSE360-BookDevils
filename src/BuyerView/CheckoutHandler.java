@@ -9,7 +9,7 @@ import java.util.List;
 
 public class CheckoutHandler {
 
-    public Order process(Cart cart) {
+    public Order process(Cart cart, BuyerPage buyerPage) {
         if (cart.getBooks().isEmpty()) return null;
 
         // create immutable order & mark items sold
@@ -19,7 +19,8 @@ public class CheckoutHandler {
         BookListingManager.markSold(b.getId());
     });
         cart.clear();
-        OrderStore.add(order); 
+        OrderStore.add(order);
+        buyerPage.refreshListings();
         return order;
     }
 }
