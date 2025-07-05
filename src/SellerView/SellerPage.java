@@ -34,9 +34,7 @@ public class SellerPage extends Application {
 
     @Override
     public void start(Stage stage) {
-        // Top bar
-        ImageView logo = new ImageView(new Image(getClass()
-            .getResource("/LoginPage/logo(2).png").toExternalForm()));
+        ImageView logo = new ImageView(new Image(getClass().getResource("/LoginPage/logo(2).png").toExternalForm()));
         logo.setFitHeight(70); logo.setPreserveRatio(true);
 
         Label title = new Label("Book Devils");
@@ -60,7 +58,6 @@ public class SellerPage extends Application {
         topBar.setStyle("-fx-background-color:#750029;");
         topBar.setAlignment(Pos.CENTER_LEFT);
 
-        // Table
         table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
@@ -76,27 +73,23 @@ public class SellerPage extends Application {
             @Override
             protected void updateItem(Number val, boolean empty) {
                 super.updateItem(val, empty);
-                setText(empty || val == null
-                    ? null
-                    : String.format("%.2f", val.doubleValue()));
+                setText(empty || val == null ? null : String.format("%.2f", val.doubleValue()));
             }
         });
 
         TableColumn<Book, String> categoryCol = new TableColumn<>("Category");
-        categoryCol.setCellValueFactory(d ->
-            new SimpleStringProperty(d.getValue().getCategory().name())
-        );
+        categoryCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getCategory().name()));
 
         TableColumn<Book, String> conditionCol = new TableColumn<>("Condition");
-        conditionCol.setCellValueFactory(d ->
-            new SimpleStringProperty(d.getValue().getCondition().name())
-        );
+        conditionCol.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getCondition().name()));
 
         TableColumn<Book, Void> actionCol = new TableColumn<>("Actions");
         actionCol.setCellFactory(col -> new TableCell<>() {
             private final Button edit = new Button("Edit");
-            private final Button del  = new Button("Delete");
+            private final Button del = new Button("Delete");
             {
+                edit.setStyle("-fx-background-color:#750029;-fx-text-fill:white;-fx-font-weight:bold;");
+                del.setStyle("-fx-background-color:#750029;-fx-text-fill:white;-fx-font-weight:bold;");
                 edit.setOnAction(e -> {
                     Book b = getTableView().getItems().get(getIndex());
                     showEditBookDialog(b);
@@ -110,17 +103,13 @@ public class SellerPage extends Application {
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : new HBox(5, edit, del));
+                setGraphic(empty ? null : new HBox(10, edit, del));
             }
         });
 
-        table.getColumns().setAll(
-          titleCol, authorCol, priceCol,
-          categoryCol, conditionCol, actionCol
-        );
+        table.getColumns().setAll(titleCol, authorCol, priceCol, categoryCol, conditionCol, actionCol);
         refreshTable();
 
-        // Footer
         Button listBtn = new Button("List New Book");
         listBtn.setStyle("-fx-background-color:#750029;-fx-text-fill:white;-fx-font-weight:bold;");
         listBtn.setOnAction(e -> {
@@ -132,7 +121,6 @@ public class SellerPage extends Application {
         footer.setPadding(new Insets(10));
         footer.setAlignment(Pos.CENTER_LEFT);
 
-        // Layout
         BorderPane root = new BorderPane();
         root.setTop(topBar);
         root.setCenter(table);
@@ -176,40 +164,64 @@ public class SellerPage extends Application {
         Dialog<Book> dlg = new Dialog<>();
         dlg.setTitle("New Book");
         dlg.setHeaderText("Enter all details for your new listing:");
+
+        DialogPane dialogPane = dlg.getDialogPane();
+        dialogPane.setStyle("-fx-background-color: #fefefe;");
+
         ButtonType addType = new ButtonType("Add", ButtonBar.ButtonData.OK_DONE);
-        dlg.getDialogPane().getButtonTypes().addAll(addType, ButtonType.CANCEL);
+        dialogPane.getButtonTypes().addAll(addType, ButtonType.CANCEL);
 
         GridPane g = new GridPane();
-        g.setHgap(10); g.setVgap(10);
-        g.setPadding(new Insets(20,150,10,10));
+        g.setHgap(10);
+        g.setVgap(12);
+        g.setPadding(new Insets(24));
 
-        TextField tF = new TextField();    tF.setPromptText("Title");
-        TextField aF = new TextField();    aF.setPromptText("Author");
-        TextField pF = new TextField();    pF.setPromptText("9.99");
-        ChoiceBox<Book.Category> cB =
-          new ChoiceBox<>(FXCollections.observableArrayList(Book.Category.values()));
+        TextField tF = new TextField();
+        tF.setPromptText("Title");
+        TextField aF = new TextField();
+        aF.setPromptText("Author");
+        TextField pF = new TextField();
+        pF.setPromptText("9.99");
+
+        ChoiceBox<Book.Category> cB = new ChoiceBox<>(FXCollections.observableArrayList(Book.Category.values()));
         cB.setValue(Book.Category.OTHER);
-        ChoiceBox<Book.Condition> dB =
-          new ChoiceBox<>(FXCollections.observableArrayList(Book.Condition.values()));
+        ChoiceBox<Book.Condition> dB = new ChoiceBox<>(FXCollections.observableArrayList(Book.Condition.values()));
         dB.setValue(Book.Condition.NEW);
 
-        g.add(new Label("Title:"),    0,0); g.add(tF, 1,0);
-        g.add(new Label("Author:"),   0,1); g.add(aF, 1,1);
-        g.add(new Label("Price:"),    0,2); g.add(pF, 1,2);
-        g.add(new Label("Category:"), 0,3); g.add(cB, 1,3);
-        g.add(new Label("Condition:"),0,4); g.add(dB, 1,4);
+        Label titleLbl = new Label("Title:");
+        titleLbl.setStyle("-fx-text-fill: #750029; -fx-font-weight: bold;");
+        Label authorLbl = new Label("Author:");
+        authorLbl.setStyle("-fx-text-fill: #750029; -fx-font-weight: bold;");
+        Label priceLbl = new Label("Price:");
+        priceLbl.setStyle("-fx-text-fill: #750029; -fx-font-weight: bold;");
+        Label catLbl = new Label("Category:");
+        catLbl.setStyle("-fx-text-fill: #750029; -fx-font-weight: bold;");
+        Label condLbl = new Label("Condition:");
+        condLbl.setStyle("-fx-text-fill: #750029; -fx-font-weight: bold;");
 
-        dlg.getDialogPane().setContent(g);
+        g.add(titleLbl, 0, 0);  g.add(tF, 1, 0);
+        g.add(authorLbl, 0, 1); g.add(aF, 1, 1);
+        g.add(priceLbl, 0, 2);  g.add(pF, 1, 2);
+        g.add(catLbl, 0, 3);    g.add(cB, 1, 3);
+        g.add(condLbl, 0, 4);   g.add(dB, 1, 4);
 
-        Node addBtn = dlg.getDialogPane().lookupButton(addType);
+        dialogPane.setContent(g);
+
+        Node addBtn = dialogPane.lookupButton(addType);
         BooleanBinding validAdd = new BooleanBinding() {
-            { bind(tF.textProperty(), aF.textProperty(), pF.textProperty()); }
-            @Override protected boolean computeValue() {
+            {
+                bind(tF.textProperty(), aF.textProperty(), pF.textProperty());
+            }
+
+            @Override
+            protected boolean computeValue() {
                 try {
                     return !tF.getText().trim().isEmpty()
-                        && !aF.getText().trim().isEmpty()
-                        && Double.parseDouble(pF.getText().trim())>0;
-                } catch(Exception e){ return false;}
+                            && !aF.getText().trim().isEmpty()
+                            && Double.parseDouble(pF.getText().trim()) > 0;
+                } catch (Exception e) {
+                    return false;
+                }
             }
         };
         addBtn.disableProperty().bind(validAdd.not());
@@ -218,13 +230,13 @@ public class SellerPage extends Application {
             if (btn == addType) {
                 double cost = Double.parseDouble(pF.getText().trim());
                 return new Book(
-                  tF.getText().trim(),
-                  aF.getText().trim(),
-                  2025,
-                  cB.getValue(),
-                  dB.getValue(),
-                  cost,
-                  seller.getAsuId()
+                        tF.getText().trim(),
+                        aF.getText().trim(),
+                        2025,
+                        cB.getValue(),
+                        dB.getValue(),
+                        cost,
+                        seller.getAsuId()
                 );
             }
             return null;
@@ -238,40 +250,61 @@ public class SellerPage extends Application {
         Dialog<Book> dlg = new Dialog<>();
         dlg.setTitle("Edit Book");
         dlg.setHeaderText("Modify any fields, then Save:");
+
+        DialogPane dialogPane = dlg.getDialogPane();
+        dialogPane.setStyle("-fx-background-color: #fefefe;");
+
         ButtonType saveT = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
-        dlg.getDialogPane().getButtonTypes().addAll(saveT, ButtonType.CANCEL);
+        dialogPane.getButtonTypes().addAll(saveT, ButtonType.CANCEL);
 
         GridPane g = new GridPane();
-        g.setHgap(10); g.setVgap(10);
-        g.setPadding(new Insets(20,150,10,10));
+        g.setHgap(10);
+        g.setVgap(12);
+        g.setPadding(new Insets(24));
 
         TextField tF = new TextField(book.getTitle());
         TextField aF = new TextField(book.getAuthor());
         TextField pF = new TextField(String.valueOf(book.getOriginalPrice()));
-        ChoiceBox<Book.Category> cB =
-          new ChoiceBox<>(FXCollections.observableArrayList(Book.Category.values()));
+
+        ChoiceBox<Book.Category> cB = new ChoiceBox<>(FXCollections.observableArrayList(Book.Category.values()));
         cB.setValue(book.getCategory());
-        ChoiceBox<Book.Condition> dB =
-          new ChoiceBox<>(FXCollections.observableArrayList(Book.Condition.values()));
+        ChoiceBox<Book.Condition> dB = new ChoiceBox<>(FXCollections.observableArrayList(Book.Condition.values()));
         dB.setValue(book.getCondition());
 
-        g.add(new Label("Title:"),    0,0); g.add(tF,1,0);
-        g.add(new Label("Author:"),   0,1); g.add(aF,1,1);
-        g.add(new Label("Price:"),    0,2); g.add(pF,1,2);
-        g.add(new Label("Category:"), 0,3); g.add(cB,1,3);
-        g.add(new Label("Condition:"),0,4); g.add(dB,1,4);
+        Label titleLbl = new Label("Title:");
+        titleLbl.setStyle("-fx-text-fill: #750029; -fx-font-weight: bold;");
+        Label authorLbl = new Label("Author:");
+        authorLbl.setStyle("-fx-text-fill: #750029; -fx-font-weight: bold;");
+        Label priceLbl = new Label("Price:");
+        priceLbl.setStyle("-fx-text-fill: #750029; -fx-font-weight: bold;");
+        Label catLbl = new Label("Category:");
+        catLbl.setStyle("-fx-text-fill: #750029; -fx-font-weight: bold;");
+        Label condLbl = new Label("Condition:");
+        condLbl.setStyle("-fx-text-fill: #750029; -fx-font-weight: bold;");
 
-        dlg.getDialogPane().setContent(g);
+        g.add(titleLbl, 0, 0);  g.add(tF, 1, 0);
+        g.add(authorLbl, 0, 1); g.add(aF, 1, 1);
+        g.add(priceLbl, 0, 2);  g.add(pF, 1, 2);
+        g.add(catLbl, 0, 3);    g.add(cB, 1, 3);
+        g.add(condLbl, 0, 4);   g.add(dB, 1, 4);
 
-        Node saveBtn = dlg.getDialogPane().lookupButton(saveT);
+        dialogPane.setContent(g);
+
+        Node saveBtn = dialogPane.lookupButton(saveT);
         BooleanBinding validSave = new BooleanBinding() {
-            { bind(tF.textProperty(), aF.textProperty(), pF.textProperty()); }
-            @Override protected boolean computeValue() {
+            {
+                bind(tF.textProperty(), aF.textProperty(), pF.textProperty());
+            }
+
+            @Override
+            protected boolean computeValue() {
                 try {
                     return !tF.getText().trim().isEmpty()
-                        && !aF.getText().trim().isEmpty()
-                        && Double.parseDouble(pF.getText().trim())>0;
-                } catch(Exception e){ return false;}
+                            && !aF.getText().trim().isEmpty()
+                            && Double.parseDouble(pF.getText().trim()) > 0;
+                } catch (Exception e) {
+                    return false;
+                }
             }
         };
         saveBtn.disableProperty().bind(validSave.not());
@@ -290,8 +323,8 @@ public class SellerPage extends Application {
 
         dlg.showAndWait().ifPresent(b -> {
             BookListingManager.updateListing(b.getId(), b);
-            refreshTable();   // re-fetch items
-            table.refresh();  // force repaint so Category/Condition update
+            refreshTable();
+            table.refresh();
         });
     }
 }
