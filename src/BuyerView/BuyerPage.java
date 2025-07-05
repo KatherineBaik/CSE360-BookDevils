@@ -21,6 +21,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.Paint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -185,32 +186,57 @@ public class BuyerPage extends Application {
      * ------------------------------------------------------------------ */
     private TableView<Book> buildTable() {
         table = new TableView<>(filtered);
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        TableColumn<Book,String> titleCol  = new TableColumn<>("Title");
+        // Ensure minimum height and preferred size for better visibility
+        table.setMinHeight(400);
+        table.setPrefHeight(500);
+
+        table.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY); // Allows columns to scroll horizontally if needed
+
+        TableColumn<Book, String> titleCol = new TableColumn<>("Title");
+        titleCol.setMinWidth(180);
         titleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
-        TableColumn<Book,String> authorCol = new TableColumn<>("Author");
+
+        TableColumn<Book, String> authorCol = new TableColumn<>("Author");
+        authorCol.setMinWidth(140);
         authorCol.setCellValueFactory(new PropertyValueFactory<>("author"));
-        TableColumn<Book,String> catCol    = new TableColumn<>("Category");
+
+        TableColumn<Book, String> catCol = new TableColumn<>("Category");
+        catCol.setMinWidth(120);
         catCol.setCellValueFactory(c -> Bindings.createStringBinding(() -> c.getValue().getCategory().name()));
-        TableColumn<Book,String> condCol   = new TableColumn<>("Condition");
+
+        TableColumn<Book, String> condCol = new TableColumn<>("Condition");
+        condCol.setMinWidth(120);
         condCol.setCellValueFactory(c -> Bindings.createStringBinding(() -> c.getValue().getCondition().name()));
-        TableColumn<Book,Number> priceCol  = new TableColumn<>("Price");
+
+        TableColumn<Book, Number> priceCol = new TableColumn<>("Price");
+        priceCol.setMinWidth(100);
         priceCol.setCellValueFactory(new PropertyValueFactory<>("sellingPrice"));
 
-        TableColumn<Book, Void> actionCol = new TableColumn<>(" ");
+        TableColumn<Book, Void> actionCol = new TableColumn<>(" ");
+        actionCol.setMinWidth(100);
         actionCol.setCellFactory(col -> new TableCell<>() {
             private final Button btn = new Button("Details");
             {
                 btn.setOnAction(e -> showDetails(getTableView().getItems().get(getIndex())));
+                btn.setStyle("-fx-background-color: #750029; -fx-text-fill: white; -fx-font-weight: bold;");
             }
-            @Override protected void updateItem(Void v, boolean empty) {
+            @Override
+            protected void updateItem(Void v, boolean empty) {
                 super.updateItem(v, empty);
                 setGraphic(empty ? null : btn);
             }
         });
 
         table.getColumns().addAll(titleCol, authorCol, catCol, condCol, priceCol, actionCol);
+
+        // Wrap in ScrollPane for responsive visibility
+        ScrollPane scrollPane = new ScrollPane(table);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(true);
+
+        BorderPane wrapper = new BorderPane(scrollPane);
+        wrapper.setPadding(new Insets(10));
         return table;
     }
 
@@ -291,55 +317,109 @@ public class BuyerPage extends Application {
     private void openCart() {
         Stage dlg = new Stage();
         dlg.initModality(Modality.APPLICATION_MODAL);
-        dlg.setTitle("Cart");
+        dlg.setTitle("Your Cart 🛒");
 
         ObservableList<Book> cartItems = FXCollections.observableArrayList(cart.getBooks());
         ListView<Book> list = new ListView<>(cartItems);
         list.setCellFactory(v -> new ListCell<>() {
             private final Button removeBtn = new Button("Remove");
-            private final HBox hbox = new HBox(10);
+            private final VBox bookDetailsBox = new VBox(4);
+            private final HBox hbox = new HBox(12);
+
             {
+                removeBtn.setStyle("-fx-background-color: #750029; -fx-text-fill: white; -fx-font-weight: bold;");
                 removeBtn.setOnAction(e -> {
                     Book bookToRemove = getItem();
                     if (bookToRemove != null) {
                         cart.remove(bookToRemove);
-                        cartItems.remove(bookToRemove); // Update the ObservableList
+                        cartItems.remove(bookToRemove);
                         updateCartLabel();
                     }
                 });
+
+                hbox.setAlignment(Pos.CENTER_LEFT);
+                hbox.setPadding(new Insets(8));
             }
-            @Override protected void updateItem(Book b, boolean empty) {
+
+            @Override
+            protected void updateItem(Book b, boolean empty) {
                 super.updateItem(b, empty);
                 if (empty || b == null) {
                     setGraphic(null);
                     setText(null);
                 } else {
-                    Label bookSummary = new Label(b.getBookSummary());
-                    HBox.setHgrow(bookSummary, Priority.ALWAYS);
-                    hbox.getChildren().setAll(bookSummary, removeBtn);
+                    Label title = new Label(b.getTitle());
+                    title.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+                    title.setWrapText(true);
+
+                    Label author = new Label("by " + b.getAuthor());
+                    author.setFont(Font.font("Arial", 12));
+                    author.setTextFill(Color.GRAY);
+
+                    Label price = new Label("$" + String.format("%.2f", b.getSellingPrice()));
+                    price.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
+                    price.setTextFill(Color.web("#750029"));
+
+                    bookDetailsBox.getChildren().setAll(title, author, price);
+                    HBox.setHgrow(bookDetailsBox, Priority.ALWAYS);
+
+                    hbox.getChildren().setAll(bookDetailsBox, removeBtn);
                     setGraphic(hbox);
                 }
             }
         });
 
+        Label cartHeading = new Label("Items in your Cart:");
+        cartHeading.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        cartHeading.setTextFill(Color.web("#750029"));
+
         Label totalLbl = new Label();
         totalLbl.textProperty().bind(Bindings.format("Total: $%.2f", Bindings.createDoubleBinding(cart::getTotal)));
+        totalLbl.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        totalLbl.setTextFill(Color.web("#750029"));
 
+        // Styled Checkout Button with UI Consistency
         Button checkoutBtn = new Button("Checkout");
+        checkoutBtn.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        checkoutBtn.setStyle("-fx-background-color: #750029; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 6;");
+
+        checkoutBtn.setOnMouseEntered(e -> checkoutBtn.setStyle(
+                "-fx-background-color: #a0003c; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 6;"));
+        checkoutBtn.setOnMouseExited(e -> checkoutBtn.setStyle(
+                "-fx-background-color: #750029; -fx-text-fill: white; -fx-padding: 10 20; -fx-background-radius: 6;"));
+
         checkoutBtn.setOnAction(e -> {
             if (cart.getBooks().isEmpty()) return;
             Order order = checkout.process(cart, this);
             if (order != null) {
-                Alert ok = new Alert(Alert.AlertType.INFORMATION, "Order #" + order.getOrderId() + " placed!");
+                Alert ok = new Alert(Alert.AlertType.INFORMATION);
+                ok.setTitle("Order Confirmed");
+                ok.setHeaderText(null);
+                ok.setContentText("Order #" + order.getOrderId() + " placed successfully!");
+
+                DialogPane dialogPane = ok.getDialogPane();
+                dialogPane.setStyle("-fx-background-color: #fff;");
+                dialogPane.lookupButton(ButtonType.OK).setStyle(
+                        "-fx-background-color: #750029; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
+
                 ok.showAndWait();
                 updateCartLabel();
                 dlg.close();
             }
         });
 
-        VBox box = new VBox(10, list, totalLbl, checkoutBtn);
-        box.setPadding(new Insets(12));
-        dlg.setScene(new Scene(box, 400, 400)); // Increased width to accommodate button
+        VBox box = new VBox(20);
+        box.setPadding(new Insets(24));
+        box.getChildren().addAll(
+                cartHeading,
+                list,
+                totalLbl,
+                checkoutBtn
+        );
+        box.setStyle("-fx-background-color: #fefefe;");
+
+        Scene scene = new Scene(box, 520, 520);
+        dlg.setScene(scene);
         dlg.showAndWait();
     }
 
@@ -348,41 +428,69 @@ public class BuyerPage extends Application {
         dlg.initModality(Modality.APPLICATION_MODAL);
         dlg.setTitle("Wishlist");
 
+        Label heading = new Label("Your Wishlist");
+        heading.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        heading.setTextFill(Color.web("#750029"));
+
         ObservableList<Book> wishlistItems = FXCollections.observableArrayList(wishlist);
         ListView<Book> list = new ListView<>(wishlistItems);
         list.setCellFactory(v -> new ListCell<>() {
             private final Button removeBtn = new Button("Remove");
-            private final HBox hbox = new HBox(10);
+            private final VBox bookDetailsBox = new VBox(4);
+            private final HBox hbox = new HBox(12);
+
             {
+                removeBtn.setStyle("-fx-background-color: #750029; -fx-text-fill: white; -fx-font-weight: bold;");
                 removeBtn.setOnAction(e -> {
                     Book bookToRemove = getItem();
                     if (bookToRemove != null) {
                         wishlist.remove(bookToRemove);
-                        wishlistItems.remove(bookToRemove); // Update the ObservableList
+                        wishlistItems.remove(bookToRemove);
                         updateWishlistLabel();
                     }
                 });
+
+                hbox.setAlignment(Pos.CENTER_LEFT);
+                hbox.setPadding(new Insets(8));
             }
-            @Override protected void updateItem(Book b, boolean empty) {
+
+            @Override
+            protected void updateItem(Book b, boolean empty) {
                 super.updateItem(b, empty);
                 if (empty || b == null) {
                     setGraphic(null);
                     setText(null);
                 } else {
-                    Label bookSummary = new Label(b.getBookSummary());
-                    HBox.setHgrow(bookSummary, Priority.ALWAYS);
-                    hbox.getChildren().setAll(bookSummary, removeBtn);
+                    Label title = new Label(b.getTitle());
+                    title.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+                    title.setWrapText(true);
+
+                    Label author = new Label("by " + b.getAuthor());
+                    author.setFont(Font.font("Arial", 12));
+                    author.setTextFill(Color.GRAY);
+
+                    Label price = new Label("$" + String.format("%.2f", b.getSellingPrice()));
+                    price.setFont(Font.font("Arial", FontWeight.NORMAL, 12));
+                    price.setTextFill(Color.web("#750029"));
+
+                    bookDetailsBox.getChildren().setAll(title, author, price);
+                    HBox.setHgrow(bookDetailsBox, Priority.ALWAYS);
+
+                    hbox.getChildren().setAll(bookDetailsBox, removeBtn);
                     setGraphic(hbox);
                 }
             }
         });
 
         Button close = new Button("Close");
+        close.setStyle("-fx-background-color: #750029; -fx-text-fill: white; -fx-font-weight: bold;");
         close.setOnAction(e -> dlg.close());
 
-        VBox box = new VBox(10, list, close);
-        box.setPadding(new Insets(12));
-        dlg.setScene(new Scene(box, 400, 400)); // Increased width to accommodate button
+        VBox box = new VBox(20, heading, list, close);
+        box.setPadding(new Insets(20));
+        box.setStyle("-fx-background-color: #fefefe;");
+
+        dlg.setScene(new Scene(box, 520, 520));
         dlg.showAndWait();
     }
 
