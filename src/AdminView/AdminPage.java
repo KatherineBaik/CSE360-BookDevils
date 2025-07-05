@@ -105,6 +105,21 @@ public class AdminPage extends Application {
     private Tab createDashboardTab(){
         Tab tab = new Tab("Dashboard");
         tab.setClosable(false);
+
+        // Add a listener to update content when the tab is selected
+        tab.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) { // Tab is selected
+                updateDashboardTabContent(tab);
+            }
+        });
+
+        // Initial content (can be empty or a loading message)
+        updateDashboardTabContent(tab); // Call once to set initial content
+
+        return tab;
+    }
+
+    private void updateDashboardTabContent(Tab tab) {
         VBox layout = createStyledLayout("Admin's Dashboard");
 
         // Dashboard Stats
@@ -119,7 +134,7 @@ public class AdminPage extends Application {
         // User Table Section
         Label userMgmt = createHeader("User Management");
 
-        TableView<User> table = new TableView<>(users);
+        TableView<User> table = new TableView<>(FXCollections.observableArrayList(UserManager.getUserList().values()));
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setPlaceholder(new Label("No users found."));
 
@@ -147,8 +162,8 @@ public class AdminPage extends Application {
                 delete.setOnAction(e -> {
                     User user = getTableView().getItems().get(getIndex());
                     try{
-                        users.remove(user);
                         UserManager.removeUser(user.getAsuId());
+                        updateDashboardTabContent(tab); // Refresh the table after deletion
                     }
                     catch (IOException ex){
                         ex.printStackTrace();
@@ -160,6 +175,7 @@ public class AdminPage extends Application {
                     User user = getTableView().getItems().get(getIndex());
                     try{
                         UserManager.setSuspended(user.getAsuId(), !user.isSuspended());
+                        updateDashboardTabContent(tab); // Refresh the table after suspension
                     }
                     catch (IOException ex){
                         ex.printStackTrace();
@@ -188,13 +204,27 @@ public class AdminPage extends Application {
 
         layout.getChildren().addAll(userMgmt, table);
         tab.setContent(layout);
-        return tab;
     }
 
 
     private Tab createAnalysisTab(){
         Tab tab = new Tab("Analysis");
         tab.setClosable(false);
+
+        // Add a listener to update content when the tab is selected
+        tab.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) { // Tab is selected
+                updateAnalysisTabContent(tab);
+            }
+        });
+
+        // Initial content (can be empty or a loading message)
+        updateAnalysisTabContent(tab); // Call once to set initial content
+
+        return tab;
+    }
+
+    private void updateAnalysisTabContent(Tab tab) {
         VBox layout = createStyledLayout("Analysis");
 
         Map<String, Book> bookMap;
@@ -227,7 +257,6 @@ public class AdminPage extends Application {
         );
 
         tab.setContent(layout);
-        return tab;
     }
 
 
