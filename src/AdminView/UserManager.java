@@ -26,6 +26,11 @@ public class UserManager {
 
     /** Get the underlying map used by this class. */
     public static Map<String, User> getUserList(){
+        try {
+            loadData();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return userList;
     }
 
