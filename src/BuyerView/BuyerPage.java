@@ -293,11 +293,32 @@ public class BuyerPage extends Application {
         dlg.initModality(Modality.APPLICATION_MODAL);
         dlg.setTitle("Cart");
 
-        ListView<Book> list = new ListView<>(FXCollections.observableArrayList(cart.getBooks()));
+        ObservableList<Book> cartItems = FXCollections.observableArrayList(cart.getBooks());
+        ListView<Book> list = new ListView<>(cartItems);
         list.setCellFactory(v -> new ListCell<>() {
+            private final Button removeBtn = new Button("Remove");
+            private final HBox hbox = new HBox(10);
+            {
+                removeBtn.setOnAction(e -> {
+                    Book bookToRemove = getItem();
+                    if (bookToRemove != null) {
+                        cart.remove(bookToRemove);
+                        cartItems.remove(bookToRemove); // Update the ObservableList
+                        updateCartLabel();
+                    }
+                });
+            }
             @Override protected void updateItem(Book b, boolean empty) {
                 super.updateItem(b, empty);
-                setText(empty ? null : b.getBookSummary());
+                if (empty || b == null) {
+                    setGraphic(null);
+                    setText(null);
+                } else {
+                    Label bookSummary = new Label(b.getBookSummary());
+                    HBox.setHgrow(bookSummary, Priority.ALWAYS);
+                    hbox.getChildren().setAll(bookSummary, removeBtn);
+                    setGraphic(hbox);
+                }
             }
         });
 
@@ -307,7 +328,7 @@ public class BuyerPage extends Application {
         Button checkoutBtn = new Button("Checkout");
         checkoutBtn.setOnAction(e -> {
             if (cart.getBooks().isEmpty()) return;
-            Order order = checkout.process(cart);
+            Order order = checkout.process(cart, this);
             if (order != null) {
                 Alert ok = new Alert(Alert.AlertType.INFORMATION, "Order #" + order.getOrderId() + " placed!");
                 ok.showAndWait();
@@ -318,7 +339,7 @@ public class BuyerPage extends Application {
 
         VBox box = new VBox(10, list, totalLbl, checkoutBtn);
         box.setPadding(new Insets(12));
-        dlg.setScene(new Scene(box, 320, 400));
+        dlg.setScene(new Scene(box, 400, 400)); // Increased width to accommodate button
         dlg.showAndWait();
     }
 
@@ -327,11 +348,32 @@ public class BuyerPage extends Application {
         dlg.initModality(Modality.APPLICATION_MODAL);
         dlg.setTitle("Wishlist");
 
-        ListView<Book> list = new ListView<>(FXCollections.observableArrayList(wishlist));
+        ObservableList<Book> wishlistItems = FXCollections.observableArrayList(wishlist);
+        ListView<Book> list = new ListView<>(wishlistItems);
         list.setCellFactory(v -> new ListCell<>() {
+            private final Button removeBtn = new Button("Remove");
+            private final HBox hbox = new HBox(10);
+            {
+                removeBtn.setOnAction(e -> {
+                    Book bookToRemove = getItem();
+                    if (bookToRemove != null) {
+                        wishlist.remove(bookToRemove);
+                        wishlistItems.remove(bookToRemove); // Update the ObservableList
+                        updateWishlistLabel();
+                    }
+                });
+            }
             @Override protected void updateItem(Book b, boolean empty) {
                 super.updateItem(b, empty);
-                setText(empty ? null : b.getBookSummary());
+                if (empty || b == null) {
+                    setGraphic(null);
+                    setText(null);
+                } else {
+                    Label bookSummary = new Label(b.getBookSummary());
+                    HBox.setHgrow(bookSummary, Priority.ALWAYS);
+                    hbox.getChildren().setAll(bookSummary, removeBtn);
+                    setGraphic(hbox);
+                }
             }
         });
 
@@ -340,7 +382,7 @@ public class BuyerPage extends Application {
 
         VBox box = new VBox(10, list, close);
         box.setPadding(new Insets(12));
-        dlg.setScene(new Scene(box, 300, 400));
+        dlg.setScene(new Scene(box, 400, 400)); // Increased width to accommodate button
         dlg.showAndWait();
     }
 
@@ -353,6 +395,11 @@ public class BuyerPage extends Application {
 
     private void updateWishlistLabel() {
         wishlistBtn.setText("Wishlist (" + wishlist.size() + ")");
+    }
+
+    public void refreshListings() {
+        master.setAll(SellerView.BookListingManager.getAllListingsNotSold());
+        applyFilters();
     }
 
     /* ------------------------------------------------------------------
