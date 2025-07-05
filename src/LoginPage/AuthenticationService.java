@@ -35,7 +35,15 @@ public final class AuthenticationService {
 
     /** Returns the matching User or null. */
     public static User authenticate(String asuId, String pw, User.Role role) {
-        User u = users().get(asuId);
+        Map<String, User> currentUsers;
+        try {
+            currentUsers = UserStore.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null; // Handle error gracefully
+        }
+
+        User u = currentUsers.get(asuId);
         if (u == null)                    return null;
         if (!u.getPassword().equals(pw))  return null;
         if (u.isSuspended())              return null;
@@ -53,6 +61,17 @@ public final class AuthenticationService {
     }
 
     public static boolean userExists(String asuId) { return users().containsKey(asuId); }
+
+    public static boolean isAccountSuspended(String asuId) {
+        try {
+            Map<String, User> currentUsers = UserStore.load();
+            User u = currentUsers.get(asuId);
+            return u != null && u.isSuspended();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false; // Assume not suspended if there's an error loading data
+        }
+    }
 
     /* ---------- helper ---------- */
     private static void persist() {
