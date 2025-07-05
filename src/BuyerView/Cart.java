@@ -12,7 +12,7 @@ public class Cart {
     public Cart(User buyer) { this.buyer = buyer; }
 
     public boolean add(Book b) {
-        if (b.isSold()) return false;       // already gone
+        if (b.isSold() || books.contains(b)) return false;       // already gone or already in cart
         books.add(b);
         return true;
     }
