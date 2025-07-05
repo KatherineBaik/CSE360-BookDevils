@@ -50,7 +50,10 @@ public final class TransactionLog {
      *  Basic collection‑style operations
      * ------------------------------------------------------------------ */
 
-    public static List<Order> getOrderList() { return ORDER_LIST; }
+    public static List<Order> getOrderList() { 
+        loadData();
+        return ORDER_LIST; 
+    }
     public static int         size()         { return ORDER_LIST.size(); }
 
     /** Adds an order and immediately persists the change.
