@@ -45,12 +45,12 @@ public class SellerPage extends Application {
 
     /** Called by LoginPage when the SELLER logs in. */
     public SellerPage(User seller) {
-        this.seller   = seller;
+        this.seller = seller;
     }
 
     // no-arg constructor required by JavaFX launcher, never used here
     public SellerPage() {
-        this.seller  = null;
+        this.seller = null;
     }
 
     /* ------------------------------------------------------------------
@@ -59,7 +59,8 @@ public class SellerPage extends Application {
     @Override
     public void start(Stage stage) {
         // ---------------- Top Bar ----------------
-        ImageView logo = new ImageView(new Image(getClass().getResource("/LoginPage/logo(2).png").toExternalForm()));
+        ImageView logo = new ImageView(new Image(getClass()
+            .getResource("/LoginPage/logo(2).png").toExternalForm()));
         logo.setFitHeight(70);
         logo.setPreserveRatio(true);
 
@@ -71,7 +72,8 @@ public class SellerPage extends Application {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Button logoutButton = new Button("LOGOUT");
-        logoutButton.setStyle("-fx-background-color: white; -fx-text-fill: #750029; -fx-font-weight: bold;");
+        logoutButton.setStyle("-fx-background-color: white;"
+            + " -fx-text-fill: #750029; -fx-font-weight: bold;");
         logoutButton.setOnAction(e -> {
             try {
                 new LoginPage().start(new Stage());
@@ -90,27 +92,42 @@ public class SellerPage extends Application {
         table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
+        // Title column
         TableColumn<Book, String> titleCol = new TableColumn<>("Title");
         titleCol.setCellValueFactory(d -> d.getValue().titleProperty());
 
+        // Author column
         TableColumn<Book, String> authorCol = new TableColumn<>("Author");
         authorCol.setCellValueFactory(d -> d.getValue().authorProperty());
 
+        // Price column (formatted to two decimals)
         TableColumn<Book, Number> priceCol = new TableColumn<>("Price");
         priceCol.setCellValueFactory(d -> d.getValue().priceProperty());
+        priceCol.setCellFactory(col -> new TableCell<Book, Number>() {
+            @Override
+            protected void updateItem(Number price, boolean empty) {
+                super.updateItem(price, empty);
+                if (empty || price == null) {
+                    setText(null);
+                } else {
+                    setText(String.format("%.2f", price.doubleValue()));
+                }
+            }
+        });
 
-        // ***ADDED***: Category & Condition columns
+        // Category column (enum name, dynamic)
         TableColumn<Book, String> categoryCol = new TableColumn<>("Category");
         categoryCol.setCellValueFactory(d ->
-          new SimpleStringProperty(d.getValue().getCategory().toString())
+            new SimpleStringProperty(d.getValue().getCategory().name())
         );
 
+        // Condition column (enum name, dynamic)
         TableColumn<Book, String> conditionCol = new TableColumn<>("Condition");
         conditionCol.setCellValueFactory(d ->
-          new SimpleStringProperty(d.getValue().getCondition().toString())
+            new SimpleStringProperty(d.getValue().getCondition().name())
         );
 
-        // ***ADDED***: Actions column for Edit/Delete
+        // Actions column for Edit/Delete
         TableColumn<Book, Void> actionCol = new TableColumn<>("Actions");
         actionCol.setCellFactory(col -> new TableCell<>() {
             private final Button editBtn   = new Button("Edit");
@@ -133,16 +150,16 @@ public class SellerPage extends Application {
             }
         });
 
-        // ***CHANGED***: include actionCol in the table setup
         table.getColumns().setAll(
-           titleCol, authorCol, priceCol, categoryCol, conditionCol, actionCol
+            titleCol, authorCol, priceCol,
+            categoryCol, conditionCol, actionCol
         );
         refreshTable();
 
         // ---------------- Footer ----------------
         Button listBtn = new Button("List New Book");
-        listBtn.setStyle("-fx-background-color: #750029; -fx-text-fill: white; -fx-font-weight: bold;");
-        // ***CHANGED***: now launches a real Add-Book dialog instead of mockListBook()
+        listBtn.setStyle("-fx-background-color: #750029;"
+            + " -fx-text-fill: white; -fx-font-weight: bold;");
         listBtn.setOnAction(e -> {
             Book newBook = showAddBookDialog();
             if (newBook != null) listBook(newBook);
@@ -164,15 +181,14 @@ public class SellerPage extends Application {
     }
 
     /* ------------------------------------------------------------------
-     *  Controller-style API (unchanged from your original file)
+     *  Controller-style API (unchanged)
      * ------------------------------------------------------------------ */
 
-    /** Returns all books currently listed by *this* seller.
-     *  NOTE: Only shows books that haven't been sold. */
+    /** Returns all books currently listed by *this* seller. */
     public List<Book> viewListings() {
         return BookListingManager.getAllListingsNotSold().stream()
-                      .filter(b -> b.getSellerId().equals(seller.getAsuId()))
-                      .toList();
+            .filter(b -> b.getSellerId().equals(seller.getAsuId()))
+            .toList();
     }
 
     /** Adds a new listing on behalf of the seller. */
@@ -196,7 +212,7 @@ public class SellerPage extends Application {
         table.setItems(FXCollections.observableArrayList(viewListings()));
     }
 
-    // --- Validation ---
+    /** Basic non-null/empty/positive validations. */
     private boolean validateBook(Book book) {
         return book.getTitle() != null && !book.getTitle().trim().isEmpty()
             && book.getAuthor() != null && !book.getAuthor().trim().isEmpty()
@@ -205,27 +221,25 @@ public class SellerPage extends Application {
             && book.getCondition() != null;
     }
 
-    // --- Add‐Book Dialog with unified form ---
+    // --- Unified Add‐Book Dialog ---
     private Book showAddBookDialog() {
         Dialog<Book> dialog = new Dialog<>();
         dialog.setTitle("New Book");
         dialog.setHeaderText("Enter all details for your new listing:");
 
-        // OK/Cancel buttons
         ButtonType addBtnType = new ButtonType("Add Book", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(addBtnType, ButtonType.CANCEL);
 
-        // Create form fields
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
 
-        TextField titleField     = new TextField();
+        TextField titleField  = new TextField();
         titleField.setPromptText("Title");
-        TextField authorField    = new TextField();
+        TextField authorField = new TextField();
         authorField.setPromptText("Author");
-        TextField priceField     = new TextField();
+        TextField priceField  = new TextField();
         priceField.setPromptText("9.99");
 
         ChoiceBox<Book.Category> categoryBox =
@@ -236,20 +250,20 @@ public class SellerPage extends Application {
             new ChoiceBox<>(FXCollections.observableArrayList(Book.Condition.values()));
         conditionBox.setValue(Book.Condition.NEW);
 
-        grid.add(new Label("Title:"),     0, 0);
+        grid.add(new Label("Title:"),      0, 0);
         grid.add(titleField,               1, 0);
-        grid.add(new Label("Author:"),    0, 1);
+        grid.add(new Label("Author:"),     0, 1);
         grid.add(authorField,              1, 1);
-        grid.add(new Label("Price:"),     0, 2);
+        grid.add(new Label("Price:"),      0, 2);
         grid.add(priceField,               1, 2);
-        grid.add(new Label("Category:"),  0, 3);
+        grid.add(new Label("Category:"),   0, 3);
         grid.add(categoryBox,              1, 3);
-        grid.add(new Label("Condition:"), 0, 4);
+        grid.add(new Label("Condition:"),  0, 4);
         grid.add(conditionBox,             1, 4);
 
         dialog.getDialogPane().setContent(grid);
 
-        // Enable the Add button only when Title/Author non-empty & price > 0
+        // Disable the Add button until form is valid
         Node addButton = dialog.getDialogPane().lookupButton(addBtnType);
         BooleanBinding valid = new BooleanBinding() {
             {
@@ -258,11 +272,10 @@ public class SellerPage extends Application {
                            priceField.textProperty());
             }
             @Override protected boolean computeValue() {
-                String t = titleField.getText().trim();
-                String a = authorField.getText().trim();
-                String p = priceField.getText().trim();
                 try {
-                    return !t.isEmpty() && !a.isEmpty() && Double.parseDouble(p) > 0;
+                    return !titleField.getText().trim().isEmpty()
+                        && !authorField.getText().trim().isEmpty()
+                        && Double.parseDouble(priceField.getText().trim()) > 0;
                 } catch (Exception ex) {
                     return false;
                 }
@@ -270,7 +283,6 @@ public class SellerPage extends Application {
         };
         addButton.disableProperty().bind(valid.not());
 
-        // Convert result to a Book on Add
         dialog.setResultConverter(btn -> {
             if (btn == addBtnType) {
                 double cost = Double.parseDouble(priceField.getText().trim());
@@ -291,7 +303,7 @@ public class SellerPage extends Application {
         return result.orElse(null);
     }
 
-    // --- Edit‐Book Dialog using single form ---
+    // --- Unified Edit‐Book Dialog ---
     private void showEditBookDialog(Book book) {
         Dialog<Book> dialog = new Dialog<>();
         dialog.setTitle("Edit Book");
@@ -305,9 +317,9 @@ public class SellerPage extends Application {
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
 
-        TextField titleField     = new TextField(book.getTitle());
-        TextField authorField    = new TextField(book.getAuthor());
-        TextField priceField     = new TextField(String.valueOf(book.getOriginalPrice()));
+        TextField titleField  = new TextField(book.getTitle());
+        TextField authorField = new TextField(book.getAuthor());
+        TextField priceField  = new TextField(String.valueOf(book.getOriginalPrice()));
 
         ChoiceBox<Book.Category> categoryBox =
             new ChoiceBox<>(FXCollections.observableArrayList(Book.Category.values()));
@@ -317,15 +329,15 @@ public class SellerPage extends Application {
             new ChoiceBox<>(FXCollections.observableArrayList(Book.Condition.values()));
         conditionBox.setValue(book.getCondition());
 
-        grid.add(new Label("Title:"),     0, 0);
+        grid.add(new Label("Title:"),      0, 0);
         grid.add(titleField,               1, 0);
-        grid.add(new Label("Author:"),    0, 1);
+        grid.add(new Label("Author:"),     0, 1);
         grid.add(authorField,              1, 1);
-        grid.add(new Label("Price:"),     0, 2);
+        grid.add(new Label("Price:"),      0, 2);
         grid.add(priceField,               1, 2);
-        grid.add(new Label("Category:"),  0, 3);
+        grid.add(new Label("Category:"),   0, 3);
         grid.add(categoryBox,              1, 3);
-        grid.add(new Label("Condition:"), 0, 4);
+        grid.add(new Label("Condition:"),  0, 4);
         grid.add(conditionBox,             1, 4);
 
         dialog.getDialogPane().setContent(grid);
@@ -339,11 +351,10 @@ public class SellerPage extends Application {
                            priceField.textProperty());
             }
             @Override protected boolean computeValue() {
-                String t = titleField.getText().trim();
-                String a = authorField.getText().trim();
-                String p = priceField.getText().trim();
                 try {
-                    return !t.isEmpty() && !a.isEmpty() && Double.parseDouble(p) > 0;
+                    return !titleField.getText().trim().isEmpty()
+                        && !authorField.getText().trim().isEmpty()
+                        && Double.parseDouble(priceField.getText().trim()) > 0;
                 } catch (Exception ex) {
                     return false;
                 }
@@ -365,6 +376,7 @@ public class SellerPage extends Application {
 
         dialog.showAndWait().ifPresent(b -> {
             BookListingManager.updateListing(b.getId(), b);
+            // re-fetch and repaint
             refreshTable();
         });
     }
