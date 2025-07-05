@@ -235,6 +235,12 @@ public class LoginPage extends Application {
             return;
         }
 
+        // Check for suspended account first
+        if (AuthenticationService.isAccountSuspended(asuId)) {
+            setMessage("Account suspended. Please contact administrator.", Color.RED);
+            return;
+        }
+
         // delegate to AuthenticationService
         User loggedIn = AuthenticationService.authenticate(asuId, pw, role);
 
