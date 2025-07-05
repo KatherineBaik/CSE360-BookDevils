@@ -9,6 +9,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.TextInputDialog;   // ***ADDED***
+import javafx.scene.control.ChoiceDialog; // ***ADDED*** 
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -26,6 +27,7 @@ import javafx.geometry.Pos;
 import java.util.List;
 import java.util.Optional;    // ***ADDED***
 import SellerView.BookListingManager;         // ***ADDED***
+import javafx.beans.property.SimpleStringProperty;  // ***ADDED***
 /**
  * Minimal, functional Seller dashboard.
  * <p>
@@ -101,6 +103,17 @@ public class SellerPage extends Application {
         TableColumn<Book, Number> priceCol = new TableColumn<>("Price");
         priceCol.setCellValueFactory(d -> d.getValue().priceProperty());
 
+        // ***ADDED***: Category & Condition columns
+        TableColumn<Book, String> categoryCol = new TableColumn<>("Category");
+        categoryCol.setCellValueFactory(d ->
+          new SimpleStringProperty(d.getValue().getCategory().toString())
+       );
+
+       TableColumn<Book, String> conditionCol = new TableColumn<>("Condition");
+       conditionCol.setCellValueFactory(d ->
+           new SimpleStringProperty(d.getValue().getCondition().toString())
+       );
+
         // ***ADDED***: Actions column for Edit/Delete
         TableColumn<Book, Void> actionCol = new TableColumn<>("Actions");
         actionCol.setCellFactory(col -> new TableCell<>() {
@@ -125,7 +138,10 @@ public class SellerPage extends Application {
         });
 
         // ***CHANGED***: include actionCol in the table setup
-        table.getColumns().setAll(titleCol, authorCol, priceCol, actionCol);
+    table.getColumns().setAll(titleCol, authorCol, priceCol, actionCol);
+       table.getColumns().setAll(
+           titleCol, authorCol, priceCol, categoryCol, conditionCol, actionCol
+       );
         refreshTable();
 
         // ---------------- Footer ----------------
@@ -168,20 +184,13 @@ public class SellerPage extends Application {
 
     /** Adds a new listing on behalf of the seller. */
     public void listBook(Book book) {
-        // ***ADDED***: Validate user input
         if (!validateBook(book)) {
-            Alert alert = new Alert(
-                Alert.AlertType.ERROR,
-                "Please fill in Title, Author and Price (> 0)."
-            );
-            alert.showAndWait();
+            new Alert(Alert.AlertType.ERROR,
+                "Fill Title, Author, Price (>0), Category & Condition!"
+            ).showAndWait();
             return;
-        }
-
-        // ***CHANGED***: use getOriginalPrice() and setSellingPrice()
-        double cost = book.getOriginalPrice();
-        book.setSellingPrice(Math.round(cost * 1.2 * 100.0) / 100.0);
-
+         }
+        // ***CHANGED***: rely on Book.calculateSellingPrice() in constructor/condition setter
         BookListingManager.createListing(book);
         refreshTable();
     }
@@ -193,107 +202,135 @@ public class SellerPage extends Application {
      * ------------------------------------------------------------------ */
 
     /** Repopulate the TableView from current data. */
+   // --- Table Refresh ---
     private void refreshTable() {
         table.setItems(FXCollections.observableArrayList(viewListings()));
     }
 
-    /** Quick stub – creates a dummy listing so you can see the UI update. */
-    private void mockListBook() {
-        Book demo = new Book(
-            "Untitled Draft",
-            "Anonymous",
-            2025,
-            Book.Category.OTHER,
-            Book.Condition.NEW,
-            9.99,
-            seller.getAsuId()            // assumes Book has a seller-id field
-        );
-        listBook(demo);
-    }
- // ***ADDED***: Basic input validation
+    // --- Validation ---
     private boolean validateBook(Book book) {
-        return book.getTitle()  != null
-            && !book.getTitle().trim().isEmpty()
-            && book.getAuthor() != null
-            && !book.getAuthor().trim().isEmpty()
-            // ***CHANGED***: use getOriginalPrice() for validation
-            && book.getOriginalPrice() > 0;
-    }
-    // ***ADDED***: Edit dialog for existing listings
-    private void showEditBookDialog(Book book) {
-        TextInputDialog dlg =
-          new TextInputDialog(book.getTitle());
-        dlg.setTitle("Edit Book");
-        dlg.setHeaderText("Update Title:");
-        dlg.setContentText("Title:");
-        dlg.showAndWait().ifPresent(newTitle -> {
-            book.setTitle(newTitle);
-            // TODO: repeat for author, price, etc.
-
-            // Re-apply markup if cost changed
-            // ***CHANGED***: use getOriginalPrice() / setSellingPrice()
-            double cost = book.getOriginalPrice();
-            book.setSellingPrice(Math.round(cost * 1.2 * 100.0) / 100.0);
-
-
-            BookListingManager.updateListing(
-              book.getId(), book);
-            refreshTable();
-        });
+        return book.getTitle() != null && !book.getTitle().trim().isEmpty()
+            && book.getAuthor() != null && !book.getAuthor().trim().isEmpty()
+            && book.getOriginalPrice() > 0
+        + **&& book.getCategory() != null**
+        + **&& book.getCondition() != null;**
     }
 
-    // ***ADDED***: Dialog to collect real book details
+    // --- Add‐Book Dialog with dropdowns ---
     private Book showAddBookDialog() {
-        // 1) Title
-        TextInputDialog titleDlg =
-          new TextInputDialog();
-        titleDlg.setTitle("New Book");
-        titleDlg.setHeaderText("Enter Title:");
-        Optional<String> ot = titleDlg.showAndWait();
-        if (ot.isEmpty()
-         || ot.get().trim().isEmpty()) return null;
+        // Title
+        TextInputDialog tDlg = new TextInputDialog();
+        tDlg.setTitle("New Book: Title");
+        tDlg.setHeaderText("Enter Title:");
+        Optional<String> ot = tDlg.showAndWait();
+        if (ot.isEmpty() || ot.get().trim().isEmpty()) return null;
         String title = ot.get().trim();
 
-        // 2) Author
-        TextInputDialog authDlg =
-          new TextInputDialog();
-        authDlg.setTitle("New Book");
-        authDlg.setHeaderText("Enter Author:");
-        Optional<String> oa = authDlg.showAndWait();
-        if (oa.isEmpty()
-         || oa.get().trim().isEmpty()) return null;
+        // Author
+        TextInputDialog aDlg = new TextInputDialog();
+        aDlg.setTitle("New Book: Author");
+        aDlg.setHeaderText("Enter Author:");
+        Optional<String> oa = aDlg.showAndWait();
+        if (oa.isEmpty() || oa.get().trim().isEmpty()) return null;
         String author = oa.get().trim();
 
-        // 3) Cost Price
-        TextInputDialog priceDlg =
-          new TextInputDialog();
-        priceDlg.setTitle("New Book");
-        priceDlg.setHeaderText("Enter Cost Price:");
-        priceDlg.setContentText("e.g. 9.99");
-        Optional<String> op = priceDlg.showAndWait();
+        // Price
+        TextInputDialog pDlg = new TextInputDialog();
+        pDlg.setTitle("New Book: Price");
+        pDlg.setHeaderText("Enter Cost Price:");
+        pDlg.setContentText("e.g. 9.99");
+        Optional<String> op = pDlg.showAndWait();
         double cost;
         try {
-            cost = Double.parseDouble(
-              op.orElse("").trim()
-            );
+            cost = Double.parseDouble(op.orElse("").trim());
             if (cost <= 0) throw new NumberFormatException();
         } catch (NumberFormatException ex) {
-            new Alert(
-              Alert.AlertType.ERROR,
-              "Invalid price entered."
-            ).showAndWait();
+            new Alert(Alert.AlertType.ERROR, "Invalid price").showAndWait();
             return null;
         }
 
-        // 4) Build and return the Book
+        // ***ADDED***: Category dropdown
++       **ChoiceDialog<Book.Category> catDlg = new ChoiceDialog<>(**
++       **    Book.Category.OTHER, Book.Category.values()**
++       **);**
++       **catDlg.setTitle("New Book: Category");**
++       **catDlg.setHeaderText("Select Category:");**
++       **Optional<Book.Category> oc = catDlg.showAndWait();**
++       **if (oc.isEmpty()) return null;**
++       **Book.Category category = oc.get();**
+
+        // ***ADDED***: Condition dropdown
++       **ChoiceDialog<Book.Condition> condDlg = new ChoiceDialog<>(**
++       **    Book.Condition.NEW, Book.Condition.values()**
++       **);**
++       **condDlg.setTitle("New Book: Condition");**
++       **condDlg.setHeaderText("Select Condition:");**
++       **Optional<Book.Condition> od = condDlg.showAndWait();**
++       **if (od.isEmpty()) return null;**
++       **Book.Condition condition = od.get();**
+
+        // Construct Book (constructor auto–calculates sellingPrice by condition)
         return new Book(
             title,
             author,
             2025,
-            Book.Category.OTHER,
-            Book.Condition.NEW,
+        +   **category,    // ***CHANGED***  
+        +   **condition,   // ***CHANGED***  
             cost,
             seller.getAsuId()
         );
+    }
+
+    // --- Edit‐Book Dialog for all fields ---
+    private void showEditBookDialog(Book book) {
+        // Title
+        TextInputDialog tDlg = new TextInputDialog(book.getTitle());
+        tDlg.setTitle("Edit Book: Title");
+        tDlg.setHeaderText("New Title:");
+        tDlg.showAndWait().ifPresent(book::setTitle);
+
+        // Author
+        TextInputDialog aDlg = new TextInputDialog(book.getAuthor());
+        aDlg.setTitle("Edit Book: Author");
+        aDlg.setHeaderText("New Author:");
+        aDlg.showAndWait().ifPresent(book::setAuthor);
+
+        // Price
+        TextInputDialog pDlg = new TextInputDialog(
+            String.valueOf(book.getOriginalPrice())
+        );
+        pDlg.setTitle("Edit Book: Price");
+        pDlg.setHeaderText("New Cost Price:");
+        pDlg.setContentText("e.g. 12.50");
+        Optional<String> op = pDlg.showAndWait();
+        op.ifPresent(s -> {
+            try {
+                double v = Double.parseDouble(s.trim());
+                if (v > 0) book.setOriginalPrice(v);
+                else throw new NumberFormatException();
+            } catch (NumberFormatException ex) {
+                new Alert(Alert.AlertType.ERROR, "Invalid price").showAndWait();
+            }
+        });
+
+        // ***ADDED***: Category
++       **ChoiceDialog<Book.Category> catDlg = new ChoiceDialog<>(**
++       **    book.getCategory(), Book.Category.values()**
++       **);**
++       **catDlg.setTitle("Edit Book: Category");**
++       **catDlg.setHeaderText("New Category:");**
++       **catDlg.showAndWait().ifPresent(book::setCategory);**
+
+        // ***ADDED***: Condition
++       **ChoiceDialog<Book.Condition> condDlg = new ChoiceDialog<>(**
++       **    book.getCondition(), Book.Condition.values()**
++       **);**
++       **condDlg.setTitle("Edit Book: Condition");**
++       **condDlg.setHeaderText("New Condition:");**
++       **condDlg.showAndWait().ifPresent(book::setCondition);**
+
+        // Persist changes (condition setter already recalculates sellingPrice)
+        BookListingManager.updateListing(book.getId(), book);
+        refreshTable();
     }
 }
