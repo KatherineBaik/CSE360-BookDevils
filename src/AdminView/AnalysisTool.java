@@ -18,7 +18,7 @@ public class AnalysisTool {
 
     /** Returns the total number of all currently registered users in UserManager. */
     public static int getTotalUsers(){
-        return UserManager.getNumUsers();
+        return UserManager.getUserList().size();
     }
 
     /** Returns the total number of users matching role in UserManager. */
