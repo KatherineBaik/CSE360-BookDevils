@@ -138,7 +138,6 @@ public class SellerPage extends Application {
         });
 
         // ***CHANGED***: include actionCol in the table setup
-    table.getColumns().setAll(titleCol, authorCol, priceCol, actionCol);
        table.getColumns().setAll(
            titleCol, authorCol, priceCol, categoryCol, conditionCol, actionCol
        );
@@ -212,8 +211,8 @@ public class SellerPage extends Application {
         return book.getTitle() != null && !book.getTitle().trim().isEmpty()
             && book.getAuthor() != null && !book.getAuthor().trim().isEmpty()
             && book.getOriginalPrice() > 0
-        + **&& book.getCategory() != null**
-        + **&& book.getCondition() != null;**
+        && book.getCategory() != null
+         && book.getCondition() != null;
     }
 
     // --- Add‐Book Dialog with dropdowns ---
@@ -250,32 +249,32 @@ public class SellerPage extends Application {
         }
 
         // ***ADDED***: Category dropdown
-+       **ChoiceDialog<Book.Category> catDlg = new ChoiceDialog<>(**
-+       **    Book.Category.OTHER, Book.Category.values()**
-+       **);**
-+       **catDlg.setTitle("New Book: Category");**
-+       **catDlg.setHeaderText("Select Category:");**
-+       **Optional<Book.Category> oc = catDlg.showAndWait();**
-+       **if (oc.isEmpty()) return null;**
-+       **Book.Category category = oc.get();**
+ChoiceDialog<Book.Category> catDlg = new ChoiceDialog<>(
+    Book.Category.OTHER, Book.Category.values()
+);
+catDlg.setTitle("New Book: Category");
+catDlg.setHeaderText("Select Category:");
+Optional<Book.Category> oc = catDlg.showAndWait();
+       if (oc.isEmpty()) return null;
+       Book.Category category = oc.get();
 
         // ***ADDED***: Condition dropdown
-+       **ChoiceDialog<Book.Condition> condDlg = new ChoiceDialog<>(**
-+       **    Book.Condition.NEW, Book.Condition.values()**
-+       **);**
-+       **condDlg.setTitle("New Book: Condition");**
-+       **condDlg.setHeaderText("Select Condition:");**
-+       **Optional<Book.Condition> od = condDlg.showAndWait();**
-+       **if (od.isEmpty()) return null;**
-+       **Book.Condition condition = od.get();**
+ChoiceDialog<Book.Condition> condDlg = new ChoiceDialog<>(
+    Book.Condition.NEW, Book.Condition.values()
+);
+condDlg.setTitle("New Book: Condition");
+condDlg.setHeaderText("Select Condition:");
+Optional<Book.Condition> od = condDlg.showAndWait();
+if (od.isEmpty()) return null;
+Book.Condition condition = od.get();
 
         // Construct Book (constructor auto–calculates sellingPrice by condition)
         return new Book(
             title,
             author,
             2025,
-        +   **category,    // ***CHANGED***  
-        +   **condition,   // ***CHANGED***  
+            category,    // ***CHANGED***  
+            condition,   // ***CHANGED***  
             cost,
             seller.getAsuId()
         );
@@ -314,20 +313,20 @@ public class SellerPage extends Application {
         });
 
         // ***ADDED***: Category
-+       **ChoiceDialog<Book.Category> catDlg = new ChoiceDialog<>(**
-+       **    book.getCategory(), Book.Category.values()**
-+       **);**
-+       **catDlg.setTitle("Edit Book: Category");**
-+       **catDlg.setHeaderText("New Category:");**
-+       **catDlg.showAndWait().ifPresent(book::setCategory);**
+ChoiceDialog<Book.Category> catDlg = new ChoiceDialog<>(
+    book.getCategory(), Book.Category.values()
+);
+       catDlg.setTitle("Edit Book: Category");
+       catDlg.setHeaderText("New Category:");
+       catDlg.showAndWait().ifPresent(book::setCategory);
 
         // ***ADDED***: Condition
-+       **ChoiceDialog<Book.Condition> condDlg = new ChoiceDialog<>(**
-+       **    book.getCondition(), Book.Condition.values()**
-+       **);**
-+       **condDlg.setTitle("Edit Book: Condition");**
-+       **condDlg.setHeaderText("New Condition:");**
-+       **condDlg.showAndWait().ifPresent(book::setCondition);**
+       ChoiceDialog<Book.Condition> condDlg = new ChoiceDialog<>(
+           book.getCondition(), Book.Condition.values()
+       );
+       condDlg.setTitle("Edit Book: Condition");
+       condDlg.setHeaderText("New Condition:");
+       condDlg.showAndWait().ifPresent(book::setCondition);
 
         // Persist changes (condition setter already recalculates sellingPrice)
         BookListingManager.updateListing(book.getId(), book);
