@@ -46,7 +46,8 @@ BookDevils/
     ├───BuyerView/      # Buyer dashboard UI and logic
     ├───Data/           # Domain classes (Book, User, Order) + Store helpers
     ├───LoginPage/      # Login/Signup UI & Authentication
-    └───SellerView/     # Seller dashboard UI and logic
+    ├───SellerView/     # Seller dashboard UI and logic
+    └───BookDevilsApplication.java     
 ```
 
 ---
